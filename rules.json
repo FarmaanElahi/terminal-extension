@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1001,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "regexSubstitution": "https://msindia.farmaan.xyz/\\1"
+      }
+    },
+    "condition": {
+      "regexFilter": "^https://marketsmithindia\\.com/(.*)",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "sub_frame",
+        "script"
+      ]
+    }
+  }
+]
