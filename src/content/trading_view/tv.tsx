@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./views/App";
+import App from "./App";
 
 declare global {
   interface Window {

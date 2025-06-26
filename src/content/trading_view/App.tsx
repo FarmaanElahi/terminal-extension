@@ -1,3 +1,4 @@
+import "@/global.css";
 import { useEffect, useMemo, useState } from "react";
 
 interface Subscription<T> {

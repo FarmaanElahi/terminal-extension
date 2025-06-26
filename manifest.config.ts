@@ -17,7 +17,7 @@ export default defineManifest({
     {
       // @ts-ignore
       world: "MAIN",
-      js: ["src/content/main.tsx"],
+      js: ["src/content/trading_view/tv.tsx"],
       matches: ["https://in.tradingview.com/*"],
     },
   ],
