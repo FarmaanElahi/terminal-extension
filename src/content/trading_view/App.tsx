@@ -1,21 +1,6 @@
 import "@/global.css";
 import { useEffect, useMemo, useState } from "react";
 
-interface Subscription<T> {
-  subscribe: (id: string, cb: (p: T) => void) => void;
-  unsubscribe: (cb: (p: T) => void) => void;
-}
-
-declare global {
-  const TradingViewApi: {
-    getSymbolInterval: () => { symbol: string; interval: string };
-    changeSymbol: (symbol: string, interval: string) => void;
-    chart: () => {
-      onSymbolChanged: () => Subscription<Record<string, unknown>>;
-    };
-  };
-}
-
 export default function App() {
   const [symbol, setSymbol] = useState<string>();
   useEffect(() => {

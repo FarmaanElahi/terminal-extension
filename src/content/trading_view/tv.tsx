@@ -350,4 +350,4 @@ function tradingViewInit(app: ReactNode, pip?: true) {
   };
 }
 
-setTimeout(() => tradingViewInit(<App />), 2000);
+setTimeout(() => tradingViewInit(<App />, true), 2000);
