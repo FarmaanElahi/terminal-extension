@@ -2,11 +2,14 @@ import "@/global.css";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/client";
 import { DashboardLayout } from "@/components/dashboard/layout";
+import { ThemeProvider } from "@/components/theme/theme-provider.tsx";
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <DashboardLayout />
+      <ThemeProvider>
+        <DashboardLayout />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
