@@ -1,7 +1,23 @@
 import { useState } from "react";
-import { Check, Plus, X } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import { useDashboard } from "./context";
 import { WidgetLibrary } from "./widget_library";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface LayoutSidebarProps {
   isOpen: boolean;
@@ -22,29 +38,23 @@ export function LayoutSidebar({ isOpen, onClose }: LayoutSidebarProps) {
     }
   };
 
-  if (!isOpen) return null;
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleCreateLayout();
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Sidebar */}
-      <div className="absolute right-0 top-0 h-full w-80 bg-card border-l border-border shadow-xl">
+    <Sheet open={isOpen} onOpenChange={onClose} modal={false}>
+      <SheetContent side="right" className="w-80 p-0">
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-border">
-            <h2 className="text-foreground font-semibold">Dashboard Layout</h2>
-            <button
-              onClick={onClose}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <SheetHeader className="p-4 border-b border-border">
+            <SheetTitle>Dashboard Layout</SheetTitle>
+            <SheetDescription>
+              Manage your dashboard layouts and add widgets
+            </SheetDescription>
+          </SheetHeader>
 
           {/* Layout Selection */}
           <div className="p-4 border-b border-border">
@@ -52,41 +62,48 @@ export function LayoutSidebar({ isOpen, onClose }: LayoutSidebarProps) {
               {/* Layout Dropdown or Create Input */}
               {isCreating ? (
                 <div className="flex items-center space-x-2">
-                  <input
+                  <Input
                     type="text"
                     value={newLayoutName}
                     onChange={(e) => setNewLayoutName(e.target.value)}
+                    onKeyPress={handleKeyPress}
                     placeholder="Layout name"
-                    className="flex-1 bg-input text-foreground px-3 py-2 rounded-md border border-border focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="flex-1"
                     autoFocus
                   />
-                  <button
+                  <Button
                     onClick={handleCreateLayout}
-                    className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-md transition-colors"
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700"
                   >
                     <Check className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <select
+                  <Select
                     value={currentLayout}
-                    onChange={(e) => setCurrentLayout(e.target.value)}
-                    className="w-full bg-input text-foreground px-3 py-2 rounded-md border border-border focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                    onValueChange={setCurrentLayout}
                   >
-                    {layouts.map((layout) => (
-                      <option key={layout.id} value={layout.id}>
-                        {layout.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a layout" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {layouts.map((layout) => (
+                        <SelectItem key={layout.id} value={layout.id}>
+                          {layout.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
                     onClick={() => setIsCreating(true)}
-                    className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 rounded-md w-full justify-center transition-colors"
+                    variant="default"
+                    className="w-full"
                   >
-                    <Plus className="w-4 h-4" />
-                    <span>Create New Layout</span>
-                  </button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New Layout
+                  </Button>
                 </div>
               )}
             </div>
@@ -97,7 +114,7 @@ export function LayoutSidebar({ isOpen, onClose }: LayoutSidebarProps) {
             <WidgetLibrary />
           </div>
         </div>
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }
