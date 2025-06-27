@@ -3,13 +3,20 @@ import { Responsive, WidthProvider, Layout } from "react-grid-layout";
 import { useDashboard } from "./context";
 import { WidgetRenderer } from "./widget_renderer";
 import { WidgetType } from "./widget_library";
+import { Loader2 } from "lucide-react";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 export function DashboardContent() {
-  const { getCurrentLayoutData, updateLayoutData, addWidget } = useDashboard();
+  const {
+    getCurrentLayoutData,
+    updateLayoutData,
+    addWidget,
+    isLoading,
+    error,
+  } = useDashboard();
   const layoutData = getCurrentLayoutData();
 
   const handleLayoutChange = (layout: Layout[]) => {
@@ -31,6 +38,30 @@ export function DashboardContent() {
     e.preventDefault();
     e.dataTransfer.dropEffect = "copy";
   };
+
+  if (error) {
+    return (
+      <div className="h-full w-full p-4 bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive text-lg mb-2">
+            Error loading dashboard
+          </p>
+          <p className="text-muted-foreground text-sm">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="h-full w-full p-4 bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

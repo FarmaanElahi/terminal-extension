@@ -1,4 +1,5 @@
 import { Layout, TrendingUp, TrendingDown } from "lucide-react";
+import { Button } from "@/components/ui/button.tsx";
 
 interface TopBarProps {
   onLayoutClick: () => void;
@@ -62,13 +63,9 @@ export function TopBar({ onLayoutClick }: TopBarProps) {
       </div>
 
       {/* Dashboard Layout Button */}
-      <button
-        onClick={onLayoutClick}
-        className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 rounded-md transition-colors"
-      >
+      <Button variant="ghost" onClick={onLayoutClick}>
         <Layout className="w-4 h-4" />
-        <span className="text-sm">Dashboard Layout</span>
-      </button>
+      </Button>
     </div>
   );
 }
