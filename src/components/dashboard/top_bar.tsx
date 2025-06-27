@@ -1,11 +1,12 @@
-import { Layout, TrendingUp, TrendingDown } from "lucide-react";
-import { Button } from "@/components/ui/button.tsx";
+import { Layout, TrendingUp, TrendingDown, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface TopBarProps {
   onLayoutClick: () => void;
+  onToggleTopBar: () => void;
 }
 
-export function TopBar({ onLayoutClick }: TopBarProps) {
+export function TopBar({ onLayoutClick, onToggleTopBar }: TopBarProps) {
   // Hardcoded market data for now
   const marketData = [
     {
@@ -62,10 +63,18 @@ export function TopBar({ onLayoutClick }: TopBarProps) {
         ))}
       </div>
 
-      {/* Dashboard Layout Button */}
-      <Button variant="ghost" onClick={onLayoutClick}>
-        <Layout className="w-4 h-4" />
-      </Button>
+      {/* Action Buttons */}
+      <div className="flex items-center space-x-2">
+        {/* Hide Top Bar Button */}
+        <Button variant="ghost" size="sm" onClick={onToggleTopBar}>
+          <EyeOff className="w-4 h-4" />
+        </Button>
+
+        {/* Dashboard Layout Button */}
+        <Button variant="ghost" size="sm" onClick={onLayoutClick}>
+          <Layout className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 }

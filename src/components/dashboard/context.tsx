@@ -8,12 +8,12 @@ import {
 import { Layout } from "react-grid-layout";
 import { WidgetType } from "./widget_library";
 import {
-  useScreens,
-  useCreateScreen,
-  useUpdateScreen,
-  useDeleteScreen,
+  useDashboards,
+  useCreateDashboard,
+  useUpdatedDashboard,
+  useDeleteDashboard,
 } from "@/lib/api";
-import type { Screen } from "@/types/supabase";
+import type { Dashboard } from "@/types/supabase";
 
 interface WidgetInstance {
   id: string;
@@ -29,11 +29,11 @@ interface DashboardLayout {
 }
 
 interface DashboardContextType {
-  screens: Screen[];
-  currentScreenId: string | null;
-  setCurrentScreenId: (screenId: string) => void;
-  createScreen: (name: string) => void;
-  deleteScreen: (screenId: string) => void;
+  dashboards: Dashboard[];
+  currentDashboardId: string | null;
+  setCurrentDashboardId: (dashboardId: string) => void;
+  createDashboard: (name: string) => void;
+  deleteDashboard: (dashboardId: string) => void;
   getCurrentLayoutData: () => DashboardLayout;
   updateLayoutData: (layout: Layout[]) => void;
   addWidget: (widget: WidgetType, layoutItem: Layout) => void;
@@ -59,43 +59,47 @@ interface DashboardProviderProps {
 }
 
 export function DashboardProvider({ children }: DashboardProviderProps) {
-  const [currentScreenId, setCurrentScreenId] = useState<string | null>(null);
+  const [currentDashboardId, setCurrentDashboardId] = useState<string | null>(
+    null,
+  );
 
   // API hooks
-  const { data: screens = [], isLoading, error } = useScreens();
-  const createScreenMutation = useCreateScreen((screen) => {
-    setCurrentScreenId(screen.id);
+  const { data: dashboards = [], isLoading, error } = useDashboards();
+  const createDashboardMutation = useCreateDashboard((dashboard) => {
+    setCurrentDashboardId(dashboard.id);
   });
-  const updateScreenMutation = useUpdateScreen();
-  const deleteScreenMutation = useDeleteScreen();
+  const updateDashboardMutation = useUpdatedDashboard();
+  const deleteDashboardMutation = useDeleteDashboard();
 
-  // Set initial screen when screens load
+  // Set initial dashboard when dashboards load
   useEffect(() => {
-    if (screens.length > 0 && !currentScreenId) {
-      setCurrentScreenId(screens[0].id);
+    if (dashboards.length > 0 && !currentDashboardId) {
+      setCurrentDashboardId(dashboards[0].id);
     }
-  }, [screens, currentScreenId]);
+  }, [dashboards, currentDashboardId]);
 
-  const createScreen = (name: string) => {
-    const newScreen = {
+  const createDashboard = (name: string) => {
+    const newDashboard = {
       name,
       description: `Dashboard layout: ${name}`,
       layout: [],
       widgets: [],
     };
-    createScreenMutation.mutate(newScreen);
+    createDashboardMutation.mutate(newDashboard);
   };
 
-  const deleteScreen = (screenId: string) => {
-    deleteScreenMutation.mutate(screenId, {
+  const deleteDashboard = (dashboardId: string) => {
+    deleteDashboardMutation.mutate(dashboardId, {
       onSuccess: () => {
-        // If we deleted the current screen, switch to another one
-        if (currentScreenId === screenId && screens.length > 1) {
-          const remainingScreens = screens.filter((s) => s.id !== screenId);
-          if (remainingScreens.length > 0) {
-            setCurrentScreenId(remainingScreens[0].id);
+        // If we deleted the current dashboard, switch to another one
+        if (currentDashboardId === dashboardId && dashboards.length > 1) {
+          const remainingDashboards = dashboards.filter(
+            (d) => d.id !== dashboardId,
+          );
+          if (remainingDashboards.length > 0) {
+            setCurrentDashboardId(remainingDashboards[0].id);
           } else {
-            setCurrentScreenId(null);
+            setCurrentDashboardId(null);
           }
         }
       },
@@ -103,11 +107,11 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   };
 
   const getCurrentLayoutData = (): DashboardLayout => {
-    const currentScreen = screens.find(
-      (screen) => screen.id === currentScreenId,
+    const currentDashboard = dashboards.find(
+      (dashboard) => dashboard.id === currentDashboardId,
     );
 
-    if (!currentScreen) {
+    if (!currentDashboard) {
       return {
         id: "default",
         name: "Default Layout",
@@ -116,30 +120,32 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
       };
     }
 
-    // Parse the stored layout and widgets from the screen data
-    const layout = Array.isArray(currentScreen.layout)
-      ? currentScreen.layout
+    // Parse the stored layout and widgets from the dashboard data
+    const layout = Array.isArray(currentDashboard.layout)
+      ? currentDashboard.layout
       : [];
-    const widgets = Array.isArray(currentScreen.widgets)
-      ? currentScreen.widgets
+    const widgets = Array.isArray(currentDashboard.widgets)
+      ? currentDashboard.widgets
       : [];
 
     return {
-      id: currentScreen.id,
-      name: currentScreen.name,
+      id: currentDashboard.id,
+      name: currentDashboard.name,
       layout,
       widgets,
     };
   };
 
   const updateLayoutData = (layout: Layout[]) => {
-    if (!currentScreenId) return;
+    if (!currentDashboardId) return;
 
-    const currentScreen = screens.find((s) => s.id === currentScreenId);
-    if (!currentScreen) return;
+    const currentDashboard = dashboards.find(
+      (d) => d.id === currentDashboardId,
+    );
+    if (!currentDashboard) return;
 
-    updateScreenMutation.mutate({
-      id: currentScreenId,
+    updateDashboardMutation.mutate({
+      id: currentDashboardId,
       payload: {
         layout,
         widgets: getCurrentLayoutData().widgets,
@@ -149,7 +155,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   };
 
   const addWidget = (widget: WidgetType, layoutItem: Layout) => {
-    if (!currentScreenId) return;
+    if (!currentDashboardId) return;
 
     const currentData = getCurrentLayoutData();
     const widgetInstance: WidgetInstance = {
@@ -161,8 +167,8 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     const updatedWidgets = [...currentData.widgets, widgetInstance];
     const updatedLayout = [...currentData.layout, layoutItem];
 
-    updateScreenMutation.mutate({
-      id: currentScreenId,
+    updateDashboardMutation.mutate({
+      id: currentDashboardId,
       payload: {
         widgets: updatedWidgets,
         layout: updatedLayout,
@@ -172,7 +178,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   };
 
   const removeWidget = (widgetId: string) => {
-    if (!currentScreenId) return;
+    if (!currentDashboardId) return;
 
     const currentData = getCurrentLayoutData();
     const updatedWidgets = currentData.widgets.filter((w) => w.id !== widgetId);
@@ -180,8 +186,8 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
       (item) => item.i !== widgetId,
     );
 
-    updateScreenMutation.mutate({
-      id: currentScreenId,
+    updateDashboardMutation.mutate({
+      id: currentDashboardId,
       payload: {
         widgets: updatedWidgets,
         layout: updatedLayout,
@@ -193,25 +199,25 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   return (
     <DashboardContext.Provider
       value={{
-        screens,
-        currentScreenId,
-        setCurrentScreenId,
-        createScreen,
-        deleteScreen,
+        dashboards,
+        currentDashboardId,
+        setCurrentDashboardId,
+        createDashboard,
+        deleteDashboard,
         getCurrentLayoutData,
         updateLayoutData,
         addWidget,
         removeWidget,
         isLoading:
           isLoading ||
-          createScreenMutation.isPending ||
-          updateScreenMutation.isPending ||
-          deleteScreenMutation.isPending,
+          createDashboardMutation.isPending ||
+          updateDashboardMutation.isPending ||
+          deleteDashboardMutation.isPending,
         error:
           error ||
-          createScreenMutation.error ||
-          updateScreenMutation.error ||
-          deleteScreenMutation.error,
+          createDashboardMutation.error ||
+          updateDashboardMutation.error ||
+          deleteDashboardMutation.error,
       }}
     >
       {children}

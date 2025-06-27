@@ -65,7 +65,7 @@ export function DashboardContent() {
 
   return (
     <div
-      className="h-full w-full p-4 bg-background"
+      className="h-full w-full p-4 bg-background relative"
       onDragOver={handleDragOver}
     >
       {layoutData.widgets.length === 0 ? (

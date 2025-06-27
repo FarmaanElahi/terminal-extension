@@ -38,42 +38,42 @@ interface LayoutSidebarProps {
 
 export function LayoutSidebar({ isOpen, onClose }: LayoutSidebarProps) {
   const {
-    screens,
-    currentScreenId,
-    setCurrentScreenId,
-    createScreen,
-    deleteScreen,
+    dashboards,
+    currentDashboardId,
+    setCurrentDashboardId,
+    createDashboard,
+    deleteDashboard,
     isLoading,
     error,
   } = useDashboard();
 
   const [isCreating, setIsCreating] = useState(false);
-  const [newScreenName, setNewScreenName] = useState("");
+  const [newDashboardName, setNewDashboardName] = useState("");
 
-  const handleCreateScreen = () => {
-    if (newScreenName.trim()) {
-      createScreen(newScreenName.trim());
-      setNewScreenName("");
+  const handleCreateDashboard = () => {
+    if (newDashboardName.trim()) {
+      createDashboard(newDashboardName.trim());
+      setNewDashboardName("");
       setIsCreating(false);
     }
   };
 
-  const handleDeleteScreen = (screenId: string) => {
-    deleteScreen(screenId);
+  const handleDeleteDashboard = (dashboardId: string) => {
+    deleteDashboard(dashboardId);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleCreateScreen();
+      handleCreateDashboard();
     }
     if (e.key === "Escape") {
       setIsCreating(false);
-      setNewScreenName("");
+      setNewDashboardName("");
     }
   };
 
-  const currentScreen = screens.find((s) => s.id === currentScreenId);
-  const canDelete = screens.length > 1;
+  const currentDashboard = dashboards.find((d) => d.id === currentDashboardId);
+  const canDelete = dashboards.length > 1;
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -100,7 +100,7 @@ export function LayoutSidebar({ isOpen, onClose }: LayoutSidebarProps) {
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
                   <span className="text-sm text-muted-foreground">
-                    Loading layouts...
+                    Loading dashboards...
                   </span>
                 </div>
               )}
@@ -112,17 +112,17 @@ export function LayoutSidebar({ isOpen, onClose }: LayoutSidebarProps) {
                     <div className="flex items-center space-x-2">
                       <Input
                         type="text"
-                        value={newScreenName}
-                        onChange={(e) => setNewScreenName(e.target.value)}
+                        value={newDashboardName}
+                        onChange={(e) => setNewDashboardName(e.target.value)}
                         onKeyDown={handleKeyPress}
-                        placeholder="Layout name"
+                        placeholder="Dashboard name"
                         className="flex-1"
                         autoFocus
                       />
                       <Button
-                        onClick={handleCreateScreen}
+                        onClick={handleCreateDashboard}
                         size="sm"
-                        disabled={!newScreenName.trim()}
+                        disabled={!newDashboardName.trim()}
                         className="bg-green-600 hover:bg-green-700"
                       >
                         <Check className="w-4 h-4" />
@@ -132,23 +132,26 @@ export function LayoutSidebar({ isOpen, onClose }: LayoutSidebarProps) {
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
                         <Select
-                          value={currentScreenId || ""}
-                          onValueChange={setCurrentScreenId}
+                          value={currentDashboardId || ""}
+                          onValueChange={setCurrentDashboardId}
                         >
                           <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Select a layout" />
+                            <SelectValue placeholder="Select a dashboard" />
                           </SelectTrigger>
                           <SelectContent>
-                            {screens.map((screen) => (
-                              <SelectItem key={screen.id} value={screen.id}>
-                                {screen.name}
+                            {dashboards.map((dashboard) => (
+                              <SelectItem
+                                key={dashboard.id}
+                                value={dashboard.id}
+                              >
+                                {dashboard.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
 
                         {/* Delete Button */}
-                        {currentScreen && canDelete && (
+                        {currentDashboard && canDelete && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button variant="outline" size="sm">
@@ -158,19 +161,19 @@ export function LayoutSidebar({ isOpen, onClose }: LayoutSidebarProps) {
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                  Delete Layout
+                                  Delete Dashboard
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
                                   Are you sure you want to delete "
-                                  {currentScreen.name}"? This action cannot be
-                                  undone.
+                                  {currentDashboard.name}"? This action cannot
+                                  be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() =>
-                                    handleDeleteScreen(currentScreen.id)
+                                    handleDeleteDashboard(currentDashboard.id)
                                   }
                                   className="bg-red-600 hover:bg-red-700"
                                 >
@@ -188,14 +191,35 @@ export function LayoutSidebar({ isOpen, onClose }: LayoutSidebarProps) {
                         className="w-full"
                       >
                         <Plus className="w-4 h-4 mr-2" />
-                        Create New Layout
+                        Create New Dashboard
                       </Button>
                     </div>
                   )}
                 </>
               )}
             </div>
+
+            {/* Current Dashboard Info */}
+            {currentDashboard && !isCreating && (
+              <div className="mt-3 p-3 bg-muted rounded-md">
+                <div className="text-sm">
+                  <div className="font-medium text-foreground">
+                    {currentDashboard.name}
+                  </div>
+                  {currentDashboard.description && (
+                    <div className="text-muted-foreground mt-1">
+                      {currentDashboard.description}
+                    </div>
+                  )}
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Last updated:{" "}
+                    {new Date(currentDashboard.updated_at).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+
           {/* Widget Library */}
           <div className="flex-1 overflow-y-auto">
             <WidgetLibrary />
