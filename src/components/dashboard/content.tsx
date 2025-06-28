@@ -105,12 +105,13 @@ export function DashboardContent() {
 
   return (
     <div className="h-full w-full bg-background relative">
+      {currentBreakpoint}
       {/* Always render ResponsiveGridLayout for drag and drop */}
       <ResponsiveGridLayout
         className="layout h-full"
         style={{ height: "100%" }}
         breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-        cols={{ lg: 24, md: 24, sm: 24, xs: 24, xxs: 24 }}
+        cols={{ lg: 12, md: 8, sm: 6, xs: 4, xxs: 2 }}
         rowHeight={75}
         onLayoutChange={handleLayoutChange}
         onBreakpointChange={handleBreakpointChange}
