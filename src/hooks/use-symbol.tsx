@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext } from "react";
 
-const SymbolContext = createContext<string>("NSE:JINDRILL");
+const SymbolContext = createContext<string>("NSE:APARINDS");
 
 export function SymbolProvider({
   symbol,

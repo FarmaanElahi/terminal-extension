@@ -105,7 +105,7 @@ function SortableSection({
           <Grip className="h-4 w-4 text-muted-foreground" />
         </button>
         <div>
-          <span className="font-medium">{section.name}</span>
+          <span className="">{section.name}</span>
           <Badge variant="outline" className="ml-2 text-xs">
             {section.columnIds.length} columns
           </Badge>

@@ -234,7 +234,7 @@ export function DataPanelEditor({
 
             <div className="mt-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium">Panel Sections</h3>
+                <h3 className="text-sm ">Panel Sections</h3>
                 <Button variant="outline" size="sm" onClick={addNewSection}>
                   Add Section
                 </Button>
@@ -244,7 +244,7 @@ export function DataPanelEditor({
               {editingSection.section && (
                 <div className="border rounded-md p-4 mb-4">
                   <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-medium">
+                    <h4 className="">
                       {editingSection.index < sections.length
                         ? "Edit Section"
                         : "Add New Section"}
@@ -309,7 +309,7 @@ export function DataPanelEditor({
                       className="border rounded-md p-3 hover:bg-muted/20"
                     >
                       <div className="flex items-center justify-between">
-                        <h4 className="font-medium">{section.name}</h4>
+                        <h4 className="">{section.name}</h4>
                         <div className="flex items-center gap-1">
                           <Button
                             variant="ghost"

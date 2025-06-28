@@ -4,8 +4,15 @@ import { useMemo } from "react";
 import { ColDef, Column, GridApi } from "ag-grid-community";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, X } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { defaultColumns, extendedColumnType } from "@/components/symbols/columns";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  defaultColumns,
+  extendedColumnType,
+} from "@/components/symbols/columns";
 import type { Section } from "./types";
 import { Symbol } from "@/types/symbol";
 
@@ -122,7 +129,7 @@ export function DataPanelSectionDisplay({
         data: symbolData,
         colDef: column,
         api: null as unknown as GridApi,
-        column: null as unknown as  Column,
+        column: null as unknown as Column,
         context: null,
         node: null,
       }) as string;
@@ -148,7 +155,7 @@ export function DataPanelSectionDisplay({
             open={openSections[section.name]}
             onOpenChange={() => toggleSection(section.name)}
           >
-            <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-muted/50 hover:bg-muted/70 text-xs font-medium text-muted-foreground">
+            <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-muted/50 hover:bg-muted/70 text-xs  text-muted-foreground">
               {section.name}
               <ChevronDown
                 className={cn("h-4 w-4 transition-transform", {
@@ -178,12 +185,9 @@ export function DataPanelSectionDisplay({
                     </span>
                     <span
                       className={cn({
-                        "text-bullish font-medium":
-                          isPositive && shouldColorize,
-                        "text-bearish font-medium":
-                          isNegative && shouldColorize,
-                        "font-medium":
-                          column.field === "name" || column.colId === "name",
+                        "text-bullish ": isPositive && shouldColorize,
+                        "text-bearish ": isNegative && shouldColorize,
+                        "": column.field === "name" || column.colId === "name",
                       })}
                     >
                       {formatValue(column, value)}

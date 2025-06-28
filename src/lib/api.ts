@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/client";
+import { queryClient, supabase } from "@/lib/client";
 import type { Symbol } from "@/types/symbol";
 import { queryScanner } from "@/lib/scanner";
 import {
@@ -22,7 +22,7 @@ import {
 
 //##################### SYMBOL QUOTE #####################
 async function symbolQuoteQueryFn(ticker: string) {
-  const d = await queryDuckDB<Symbol>("symbols", {
+  const d = await queryScanner<Symbol>("symbols", {
     where: `ticker = '${ticker}'`,
     limit: 1,
   });

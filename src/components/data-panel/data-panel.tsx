@@ -34,12 +34,12 @@ function PanelSelector({ title }: { title: string }) {
   return (
     <>
       <div className="p-2 flex justify-between items-center bg-muted/20 rounded-t-md">
-        <div className="text-sm font-medium">{title}</div>
+        <div className="text-sm ">{title}</div>
       </div>
       <div className="flex flex-col items-center justify-center h-full p-6">
         <div className="text-center mb-6">
           <PanelRight className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-medium mb-2">Select a Data Panel</h3>
+          <h3 className="text-lg  mb-2">Select a Data Panel</h3>
           <p className="text-sm text-muted-foreground mb-6">
             Choose an existing panel or create a new one to view symbol data
           </p>
@@ -55,7 +55,7 @@ function EmptyPanelPrompt() {
     <div className="flex flex-col items-center justify-center h-full p-6">
       <div className="text-center mb-6">
         <Edit className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-        <h3 className="text-lg font-medium mb-2">Empty Panel Configuration</h3>
+        <h3 className="text-lg  mb-2">Empty Panel Configuration</h3>
         <p className="text-sm text-muted-foreground mb-6">
           This panel has no sections or columns configured
         </p>
@@ -70,7 +70,7 @@ function NoSymbolPrompt() {
     <div className="flex flex-col items-center justify-center h-full p-6">
       <div className="text-center mb-6">
         <Search className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-        <h3 className="text-lg font-medium mb-2">Select a Symbol</h3>
+        <h3 className="text-lg  mb-2">Select a Symbol</h3>
         <p className="text-sm text-muted-foreground">
           Use the symbol search or group selector to choose a symbol.
         </p>
@@ -92,7 +92,7 @@ function LoadingState({
   return (
     <>
       <div className="p-2 flex justify-between items-center bg-muted/20 rounded-t-md">
-        <div className="text-sm font-medium">{panelName || title}</div>
+        <div className="text-sm ">{panelName || title}</div>
         <span className="text-xs text-muted-foreground">{symbol}</span>
       </div>
       <div className="overflow-auto flex-1 p-4">
@@ -206,7 +206,7 @@ function GroupLeader({
               )}
             >
               <td className="py-1.5">
-                <div className="flex items-center gap-2 font-bold">
+                <div className="flex items-center gap-2">
                   <img
                     src={[
                       `${process.env.NEXT_PUBLIC_LOGO_BASE_URL}`,
@@ -411,7 +411,7 @@ function ColumnItem({
           },
         )}
       >
-        <span className="font-bold flex items-center gap-2">
+        <span className=" flex items-center gap-2">
           {column.headerName}
           {canShowRanking && (
             <ChevronDown
@@ -422,7 +422,7 @@ function ColumnItem({
           )}
         </span>
         <span
-          className={cn("font-medium", {
+          className={cn("", {
             "text-bullish": isPositive && shouldColorize,
             "text-bearish": isNegative && shouldColorize,
           })}
@@ -480,7 +480,7 @@ function PanelSection({
     >
       <CollapsibleTrigger
         className={cn(
-          "w-full flex items-center justify-between p-2 text-xs font-bold text-muted-foreground",
+          "w-full flex items-center justify-between p-2 text-xs  text-muted-foreground",
           "rounded-t-md bg-muted/60 hover:bg-muted transition-colors",
           { "rounded-b-md": !isOpen },
         )}
@@ -619,7 +619,7 @@ export function DataPanel({
         )}
       >
         <div className="p-2 flex justify-between items-center bg-muted/20 rounded-t-md">
-          <div className="text-sm font-medium">{activePanel.name || title}</div>
+          <div className="text-sm ">{activePanel.name || title}</div>
         </div>
         <EmptyPanelPrompt />
       </div>
@@ -637,9 +637,7 @@ export function DataPanel({
         )}
       >
         <div className="p-2 flex justify-between items-center bg-muted/20 rounded-t-md">
-          <div className="text-sm font-medium">
-            {activePanel?.name || title}
-          </div>
+          <div className="text-sm ">{activePanel?.name || title}</div>
         </div>
         <NoSymbolPrompt />
       </div>
@@ -676,9 +674,7 @@ export function DataPanel({
         )}
       >
         <div className="p-2 flex justify-between items-center bg-muted/20 rounded-t-md">
-          <div className="text-sm font-medium">
-            {activePanel?.name || title}
-          </div>
+          <div className="text-sm ">{activePanel?.name || title}</div>
           <span className="text-xs text-muted-foreground">{ticker}</span>
         </div>
         <ErrorState symbol={ticker} />
@@ -751,7 +747,7 @@ function GroupList({
               )}
             >
               <td className="py-1.5">
-                <div className="flex items-center gap-2 font-bold w-32 overflow-clip">
+                <div className="flex items-center gap-2 w-32 overflow-clip">
                   <span
                     className="hover:underline cursor-pointer"
                     onClick={() =>

@@ -31,7 +31,7 @@ export function DataPanelSettings({
       </PopoverTrigger>
       <PopoverContent className="w-56" align="end">
         <div className="grid gap-2">
-          <div className="text-sm font-medium">Visible Sections</div>
+          <div className="text-sm ">Visible Sections</div>
           <div className="grid gap-1">
             {displaySections.map((section) => (
               <div key={section.name} className="flex items-center gap-2">
