@@ -75,7 +75,7 @@ export function LayoutSidebar({ isOpen, onClose }: LayoutSidebarProps) {
   const canDelete = dashboards.length > 1;
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
+    <Sheet open={isOpen} onOpenChange={onClose} modal={false}>
       <SheetContent side="right" className="w-80 p-0">
         <div className="flex flex-col h-full">
           {/* Header */}

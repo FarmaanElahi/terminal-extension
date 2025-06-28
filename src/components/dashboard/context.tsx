@@ -1,10 +1,4 @@
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 import { Layout } from "react-grid-layout";
 import { WIDGET_SIZES, widgets, WidgetType } from "./widget_registry";
 import { LayoutItem } from "./types";
@@ -67,13 +61,6 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   });
   const updateDashboardMutation = useUpdatedDashboard();
   const deleteDashboardMutation = useDeleteDashboard();
-
-  // Set initial dashboard when dashboards load
-  useEffect(() => {
-    if (dashboards.length > 0 && !currentDashboardId) {
-      setCurrentDashboardId(dashboards[0].id);
-    }
-  }, [dashboards, currentDashboardId]);
 
   const createDashboard = (name: string) => {
     const newDashboard = {
