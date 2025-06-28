@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Layout, Responsive, WidthProvider } from "react-grid-layout";
 import { useDashboard } from "./context";
 import { WidgetRenderer } from "./widget_renderer";
@@ -24,9 +24,54 @@ export function DashboardContent() {
 
   const layoutData = getCurrentLayoutData();
 
+  // Bootstrap-style responsive breakpoints and column configuration
+  const breakpoints = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 };
+  const cols = { lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 };
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Generate bootstrap-style responsive layouts
+  const generateResponsiveLayouts = useMemo(() => {
+    if (!layoutData.layout.length) return {};
+
+    // Bootstrap-style widths for different breakpoints
+    const bootstrapWidths = {
+      lg: 3, // 4 columns (12/3)
+      md: 4, // 3 columns (12/4)
+      sm: 6, // 2 columns (12/6)
+      xs: 12, // 1 column (12/12)
+      xxs: 12, // 1 column (12/12)
+    };
+
+    return Object.keys(breakpoints).reduce(
+      (layouts, breakpoint) => {
+        const width =
+          bootstrapWidths[breakpoint as keyof typeof bootstrapWidths];
+        const colCount = cols[breakpoint as keyof typeof cols];
+
+        layouts[breakpoint] = layoutData.layout.map((item, index) => {
+          // Calculate position based on bootstrap-style grid
+          const x = (index * width) % colCount;
+          const y = Math.floor((index * width) / colCount) * 4; // Stack rows properly
+
+          return {
+            i: item.i,
+            x,
+            y,
+            w: width,
+            h: item.h || 4, // Use existing height or default to 4
+            minW: WIDGET_SIZES[item.type]?.minW || 1,
+            minH: WIDGET_SIZES[item.type]?.minH || 1,
+          };
+        });
+
+        return layouts;
+      },
+      {} as { [key: string]: Layout[] },
+    );
+  }, [layoutData.layout]);
 
   const handleLayoutChange = (
     layout: Layout[],
@@ -44,7 +89,10 @@ export function DashboardContent() {
       if (layoutUpdate) {
         return {
           ...item,
-          ...layoutUpdate,
+          x: layoutUpdate.x,
+          y: layoutUpdate.y,
+          w: layoutUpdate.w,
+          h: layoutUpdate.h,
         };
       }
       return item;
@@ -105,18 +153,23 @@ export function DashboardContent() {
 
   return (
     <div className="h-full w-full bg-background relative">
-      {currentBreakpoint}
-      {/* Always render ResponsiveGridLayout for drag and drop */}
+      <div className="text-xs text-muted-foreground absolute top-2 right-2 z-10">
+        Breakpoint: {currentBreakpoint}
+      </div>
+
       <ResponsiveGridLayout
         className="layout h-full overflow-auto"
         style={{ height: "100%" }}
-        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-        cols={{ lg: 12, md: 9, sm: 6, xs: 3, xxs: 3 }}
+        breakpoints={breakpoints}
+        cols={cols}
+        layouts={generateResponsiveLayouts}
         rowHeight={75}
         onLayoutChange={handleLayoutChange}
         onBreakpointChange={handleBreakpointChange}
         onDrop={handleDrop}
         isDroppable={true}
+        isDraggable={true}
+        isResizable={true}
         allowOverlap={false}
         onDropDragOver={() => ({ w: 6, h: 6 })}
         useCSSTransforms={mounted}
@@ -124,6 +177,8 @@ export function DashboardContent() {
         preventCollision={false}
         draggableHandle=".drag-handle"
         resizeHandles={["sw", "nw", "se", "ne"]}
+        compactType="vertical"
+        margin={[10, 10]}
       >
         {layoutData.layout.map((item) => {
           const { minW, minH } = WIDGET_SIZES[item.type] ?? {};
@@ -131,7 +186,7 @@ export function DashboardContent() {
             <div
               key={item.i}
               data-grid={{ ...item, minW, minH }}
-              className="bg-card border border-border rounded-lg overflow-hidden  select-none"
+              className="bg-card border border-border rounded-lg overflow-hidden select-none shadow-sm hover:shadow-md transition-shadow"
             >
               <WidgetRenderer layoutItem={item} />
             </div>
