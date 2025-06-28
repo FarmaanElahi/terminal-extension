@@ -136,7 +136,7 @@ function tradingViewInit(app: ReactNode, pip?: true) {
       floatingContainer.style.height = "300px";
       floatingContainer.style.backgroundColor = "rgba(30, 34, 45, 0.95)";
       floatingContainer.style.color = "#d1d4dc";
-      floatingContainer.style.zIndex = "10000";
+      floatingContainer.style.zIndex = "10";
       floatingContainer.style.borderRadius = "4px";
       floatingContainer.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.3)";
       floatingContainer.style.display = "flex";
@@ -290,4 +290,4 @@ function tradingViewInit(app: ReactNode, pip?: true) {
   };
 }
 
-setTimeout(() => tradingViewInit(<App />, true), 2000);
+setTimeout(() => tradingViewInit(<App />), 2000);

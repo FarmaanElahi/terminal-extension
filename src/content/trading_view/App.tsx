@@ -11,7 +11,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <SymbolProvider symbol={"NSE:APARINDS"}>
+        <SymbolProvider>
           <DashboardLayout />
           <Toaster />
         </SymbolProvider>

@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ChevronDown, Pencil, Save, Trash, X } from "lucide-react";
-import { useDeleteDataPanel, useUpdateDataPanel } from "@/lib/state/symbol";
+import { useDeleteDataPanel, useUpdateDataPanel } from "@/lib/api";
 import { Section } from "./types";
 import { Json } from "@/types/generated/supabase";
 import { UpdateDataPanel } from "@/types/supabase";

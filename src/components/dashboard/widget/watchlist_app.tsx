@@ -1,7 +1,6 @@
-import { WidgetProps } from "./widget-props";
 import { Eye } from "lucide-react";
 
-export function WatchlistApp({ settings }: WidgetProps) {
+export function WatchlistApp() {
   return (
     <div className="h-full flex flex-col items-center justify-center p-4 bg-background">
       <Eye className="w-12 h-12 text-primary mb-4" />
@@ -21,11 +20,6 @@ export function WatchlistApp({ settings }: WidgetProps) {
           </div>
         ))}
       </div>
-      {settings && Object.keys(settings).length > 0 && (
-        <div className="mt-2 text-xs text-muted-foreground">
-          Settings: {JSON.stringify(settings)}
-        </div>
-      )}
     </div>
   );
 }

@@ -1,7 +1,6 @@
-import { WidgetProps } from "./widget-props";
 import { TrendingUp } from "lucide-react";
 
-export function ChartApp({ settings }: WidgetProps) {
+export function ChartApp() {
   return (
     <div className="h-full flex flex-col items-center justify-center p-4 bg-background">
       <TrendingUp className="w-12 h-12 text-primary mb-4" />
@@ -14,11 +13,6 @@ export function ChartApp({ settings }: WidgetProps) {
       <div className="mt-4 w-full h-24 bg-muted/50 rounded border-2 border-dashed border-border flex items-center justify-center">
         <span className="text-xs text-muted-foreground">Chart placeholder</span>
       </div>
-      {settings && Object.keys(settings).length > 0 && (
-        <div className="mt-2 text-xs text-muted-foreground">
-          Settings: {JSON.stringify(settings)}
-        </div>
-      )}
     </div>
   );
 }
