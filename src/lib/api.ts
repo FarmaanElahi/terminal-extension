@@ -452,7 +452,6 @@ export function useUpdatedDashboard() {
       id: string;
       payload: UpdateDashboard;
     }) => {
-      console.log("Updating dashboard with ID: ", id, payload);
       const { data, error } = await supabase
         .from("dashboards")
         .update({

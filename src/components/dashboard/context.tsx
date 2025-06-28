@@ -205,6 +205,8 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   };
 
   // Memoize context value to prevent unnecessary re-renders
+  // Only show loading for initial load, dashboard creation, and deletion
+  // Update operations use optimistic updates so shouldn't show loading state
   const contextValue = useMemo(
     () => ({
       dashboards,
@@ -221,14 +223,16 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
         createDashboardMutation.isPending ||
         deleteDashboardMutation.isPending,
       error:
-        error || createDashboardMutation.error || deleteDashboardMutation.error,
+        error ||
+        createDashboardMutation.error ||
+        updateDashboardMutation.error ||
+        deleteDashboardMutation.error,
     }),
     [
       dashboards,
       currentDashboardId,
       isLoading,
       createDashboardMutation.isPending,
-      updateDashboardMutation.isPending,
       deleteDashboardMutation.isPending,
       error,
       createDashboardMutation.error,
