@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Layout, Responsive, WidthProvider } from "react-grid-layout";
 import { useDashboard } from "./context";
 import { WidgetRenderer } from "./widget_renderer";
 import { LayoutItem } from "./types";
-import { widgets } from "./widget_registry";
+import { WIDGET_SIZES, widgets } from "./widget_registry";
 import { Loader2 } from "lucide-react";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -102,22 +102,8 @@ export function DashboardContent() {
     );
   }
 
-  // Convert LayoutItems to regular Layout objects for ResponsiveGridLayout
-  const gridLayout = layoutData.layout.map(
-    ({ type, settings, ...layout }) => layout,
-  );
-
-  // Create layouts object for all breakpoints
-  const layouts = {
-    lg: gridLayout,
-    md: gridLayout,
-    sm: gridLayout,
-    xs: gridLayout,
-    xxs: gridLayout,
-  };
-
   return (
-    <div className="h-full w-full p-4 bg-background relative">
+    <div className="h-full w-full bg-background relative">
       {/* Debug info */}
       <div className="absolute top-2 left-2 text-xs text-muted-foreground bg-muted/80 p-2 rounded z-20">
         Current Breakpoint: {currentBreakpoint} | Widgets:{" "}
@@ -128,7 +114,6 @@ export function DashboardContent() {
       <ResponsiveGridLayout
         className="layout h-full"
         style={{ height: "100%" }}
-        layouts={layouts}
         breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
         cols={{ lg: 24, md: 24, sm: 24, xs: 24, xxs: 24 }}
         rowHeight={75}
@@ -138,17 +123,20 @@ export function DashboardContent() {
         isDroppable={true}
         useCSSTransforms={mounted}
         measureBeforeMount={false}
-        compactType="vertical"
         preventCollision={false}
       >
-        {layoutData.layout.map((layoutItem) => (
-          <div
-            key={layoutItem.i}
-            className="bg-card border border-border rounded-lg overflow-hidden"
-          >
-            <WidgetRenderer layoutItem={layoutItem} />
-          </div>
-        ))}
+        {layoutData.layout.map((item) => {
+          const { minW, minH } = WIDGET_SIZES[item.type] ?? {};
+          return (
+            <div
+              key={item.i}
+              data-grid={{ ...item, minW, minH }}
+              className="bg-card border border-border rounded-lg overflow-hidden  select-none"
+            >
+              <WidgetRenderer layoutItem={item} />
+            </div>
+          );
+        })}
       </ResponsiveGridLayout>
     </div>
   );
