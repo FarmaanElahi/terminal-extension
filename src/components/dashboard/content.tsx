@@ -18,6 +18,7 @@ export function DashboardContent() {
     error,
   } = useDashboard();
   const layoutData = getCurrentLayoutData();
+  console.log(layoutData);
 
   const handleLayoutChange = (layout: Layout[]) => {
     // Merge the new layout positions with existing LayoutItems

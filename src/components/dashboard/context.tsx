@@ -65,9 +65,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   const createDashboard = (name: string) => {
     const newDashboard = {
       name,
-      description: `Dashboard layout: ${name}`,
       layout: [],
-      widgets: [], // This field might be removed since layout contains all info
     };
     createDashboardMutation.mutate(newDashboard);
   };
