@@ -1,4 +1,10 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Layout } from "react-grid-layout";
 import { WIDGET_SIZES, widgets, WidgetType } from "./widget_registry";
 import { LayoutItem } from "./types";
@@ -62,10 +68,19 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   const updateDashboardMutation = useUpdatedDashboard();
   const deleteDashboardMutation = useDeleteDashboard();
 
+  // Set initial dashboard when dashboards load
+  useEffect(() => {
+    if (dashboards.length > 0 && !currentDashboardId) {
+      setCurrentDashboardId(dashboards[0].id);
+    }
+  }, [dashboards, currentDashboardId]);
+
   const createDashboard = (name: string) => {
     const newDashboard = {
       name,
+      description: `Dashboard layout: ${name}`,
       layout: [],
+      widgets: [], // This field might be removed since layout contains all info
     };
     createDashboardMutation.mutate(newDashboard);
   };
@@ -134,7 +149,12 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     widget: (typeof widgets)[0],
     layoutItem?: Partial<Layout>,
   ) => {
-    if (!currentDashboardId) return;
+    console.log("addWidget called with:", { widget, layoutItem });
+
+    if (!currentDashboardId) {
+      console.warn("No current dashboard ID");
+      return;
+    }
 
     const currentData = getCurrentLayoutData();
     const widgetId = `widget-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -156,7 +176,11 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
       ...layoutItem,
     };
 
+    console.log("Creating new layout item:", newLayoutItem);
+
     const updatedLayout = [...currentData.layout, newLayoutItem];
+
+    console.log("Updated layout:", updatedLayout);
 
     updateDashboardMutation.mutate({
       id: currentDashboardId,

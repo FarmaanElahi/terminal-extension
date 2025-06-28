@@ -5,21 +5,11 @@ export function WidgetLibrary() {
   const [draggedWidget, setDraggedWidget] = useState<string | null>(null);
 
   const handleDragStart = (e: React.DragEvent, widget: (typeof widgets)[0]) => {
+    // Firefox hack - this is crucial for drag and drop to work
+    e.dataTransfer.setData("text/plain", "");
     e.dataTransfer.setData("application/json", JSON.stringify(widget));
     e.dataTransfer.effectAllowed = "copy";
     setDraggedWidget(widget.type);
-
-    // Create a custom drag image
-    const dragImage = e.currentTarget.cloneNode(true) as HTMLElement;
-    dragImage.style.transform = "rotate(5deg)";
-    dragImage.style.opacity = "0.8";
-    document.body.appendChild(dragImage);
-    e.dataTransfer.setDragImage(dragImage, 0, 0);
-
-    // Clean up drag image after a short delay
-    setTimeout(() => {
-      document.body.removeChild(dragImage);
-    }, 0);
   };
 
   const handleDragEnd = () => {
@@ -33,7 +23,8 @@ export function WidgetLibrary() {
         {widgets.map((widget) => (
           <div
             key={widget.type}
-            draggable
+            draggable={true}
+            unselectable="on" // Firefox compatibility
             onDragStart={(e) => handleDragStart(e, widget)}
             onDragEnd={handleDragEnd}
             className={`p-3 bg-card border border-border rounded-lg cursor-grab hover:bg-accent hover:border-accent-foreground/50 transition-colors group ${

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Layout, Responsive, WidthProvider } from "react-grid-layout";
 import { useDashboard } from "./context";
 import { WidgetRenderer } from "./widget_renderer";
@@ -17,15 +18,29 @@ export function DashboardContent() {
     isLoading,
     error,
   } = useDashboard();
+
+  const [mounted, setMounted] = useState(false);
+  const [currentBreakpoint, setCurrentBreakpoint] = useState("lg");
+
   const layoutData = getCurrentLayoutData();
 
-  const handleLayoutChange = (layout: Layout[]) => {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleLayoutChange = (
+    layout: Layout[],
+    layouts: { [key: string]: Layout[] },
+  ) => {
     // Only update if we have widgets to update
     if (layoutData.layout.length === 0) return;
 
+    // Use the layout for the current breakpoint
+    const currentLayout = layouts[currentBreakpoint] || layout;
+
     // Merge the new layout positions with existing LayoutItems
     const updatedLayout: LayoutItem[] = layoutData.layout.map((item) => {
-      const layoutUpdate = layout.find((l) => l.i === item.i);
+      const layoutUpdate = currentLayout.find((l) => l.i === item.i);
       if (layoutUpdate) {
         return {
           ...item,
@@ -38,18 +53,28 @@ export function DashboardContent() {
     updateLayoutData(updatedLayout);
   };
 
-  // @ts-ignore
+  const handleBreakpointChange = (breakpoint: string) => {
+    setCurrentBreakpoint(breakpoint);
+  };
+
   const handleDrop = (layout: Layout[], layoutItem: Layout, _event: Event) => {
+    console.log("Drop detected:", { layout, layoutItem, _event });
+
     const dragEvent = _event as DragEvent;
     const widgetData = dragEvent.dataTransfer?.getData("application/json");
+
+    console.log("Widget data from drag:", widgetData);
 
     if (widgetData) {
       try {
         const widget: (typeof widgets)[0] = JSON.parse(widgetData);
+        console.log("Adding widget:", widget, "at position:", layoutItem);
         addWidget(widget, layoutItem);
       } catch (error) {
         console.error("Failed to parse widget data:", error);
       }
+    } else {
+      console.warn("No widget data found in drag event");
     }
   };
 
@@ -82,33 +107,37 @@ export function DashboardContent() {
     ({ type, settings, ...layout }) => layout,
   );
 
+  // Create layouts object for all breakpoints
+  const layouts = {
+    lg: gridLayout,
+    md: gridLayout,
+    sm: gridLayout,
+    xs: gridLayout,
+    xxs: gridLayout,
+  };
+
   return (
     <div className="h-full w-full p-4 bg-background relative">
-      {/* Empty State Message - positioned absolutely over the grid */}
-      {layoutData.layout.length === 0 && (
-        <div className="absolute inset-4 flex items-center justify-center border-2 border-dashed border-border rounded-lg z-10 pointer-events-none">
-          <div className="text-center">
-            <p className="text-muted-foreground text-lg mb-2">
-              No widgets added yet
-            </p>
-            <p className="text-muted-foreground/70 text-sm">
-              Drag widgets from the sidebar to start building your dashboard
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Debug info */}
+      <div className="absolute top-2 left-2 text-xs text-muted-foreground bg-muted/80 p-2 rounded z-20">
+        Current Breakpoint: {currentBreakpoint} | Widgets:{" "}
+        {layoutData.layout.length}
+      </div>
 
       {/* Always render ResponsiveGridLayout for drag and drop */}
       <ResponsiveGridLayout
-        className="layout"
-        layouts={{ lg: gridLayout }}
+        className="layout h-full"
+        style={{ height: "100%" }}
+        layouts={layouts}
         breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-        cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-        rowHeight={60}
+        cols={{ lg: 24, md: 24, sm: 24, xs: 24, xxs: 24 }}
+        rowHeight={75}
         onLayoutChange={handleLayoutChange}
+        onBreakpointChange={handleBreakpointChange}
         onDrop={handleDrop}
         isDroppable={true}
-        useCSSTransforms={true}
+        useCSSTransforms={mounted}
+        measureBeforeMount={false}
         compactType="vertical"
         preventCollision={false}
       >
