@@ -246,14 +246,63 @@ export function useCreateDashboard(
 ) {
   const client = useQueryClient();
   return useMutation({
-    onSuccess: (dashboard: Dashboard) => {
-      void client.invalidateQueries({ queryKey: ["dashboards"] });
+    // Optimistic update for dashboard creation
+    onMutate: async (newDashboard: InsertDashboard) => {
+      // Cancel outgoing refetches
+      await client.cancelQueries({ queryKey: ["dashboards"] });
+
+      // Snapshot previous value
+      const previousDashboards = client.getQueryData<Dashboard[]>([
+        "dashboards",
+      ]);
+
+      // Create optimistic dashboard with temporary ID
+      const optimisticDashboard: Dashboard = {
+        ...newDashboard,
+        id: `temp-${Date.now()}`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        widgets: [],
+      } as Dashboard;
+
+      // Optimistically update to the new value
+      if (previousDashboards) {
+        client.setQueryData(
+          ["dashboards"],
+          [optimisticDashboard, ...previousDashboards],
+        );
+      } else {
+        client.setQueryData(["dashboards"], [optimisticDashboard]);
+      }
+
+      return { previousDashboards, optimisticDashboard };
+    },
+    // If mutation fails, rollback
+    onError: (__, ___, context) => {
+      if (context?.previousDashboards) {
+        client.setQueryData(["dashboards"], context.previousDashboards);
+      }
+    },
+    // Replace optimistic dashboard with real one on success
+    onSuccess: (dashboard: Dashboard, __, context) => {
+      const dashboards = client.getQueryData<Dashboard[]>(["dashboards"]);
+      if (dashboards && context?.optimisticDashboard) {
+        const updatedDashboards = dashboards.map((d) =>
+          d.id === context.optimisticDashboard.id ? dashboard : d,
+        );
+        client.setQueryData(["dashboards"], updatedDashboards);
+      }
+      client.setQueryData(["dashboards", dashboard.id], dashboard);
       onComplete?.(dashboard);
+    },
+    // Ensure eventual consistency
+    onSettled: () => {
+      void client.invalidateQueries({ queryKey: ["dashboards"] });
     },
     mutationFn: async (dashboard: InsertDashboard) => {
       const { data, error } = await supabase
         .from("dashboards")
-        .upsert({
+        .insert({
           ...dashboard,
           updated_at: new Date().toISOString(),
         })
@@ -269,9 +318,54 @@ export function useCreateDashboard(
 export function useDeleteDashboard(onComplete?: () => void) {
   const client = useQueryClient();
   return useMutation({
+    // Optimistic update for dashboard deletion
+    onMutate: async (dashboardId: string) => {
+      // Cancel outgoing refetches
+      await client.cancelQueries({ queryKey: ["dashboards"] });
+      await client.cancelQueries({ queryKey: ["dashboards", dashboardId] });
+
+      // Snapshot previous values
+      const previousDashboards = client.getQueryData<Dashboard[]>([
+        "dashboards",
+      ]);
+      const previousDashboard = client.getQueryData<Dashboard>([
+        "dashboards",
+        dashboardId,
+      ]);
+
+      // Optimistically remove dashboard
+      if (previousDashboards) {
+        const filteredDashboards = previousDashboards.filter(
+          (d) => d.id !== dashboardId,
+        );
+        client.setQueryData(["dashboards"], filteredDashboards);
+      }
+
+      // Remove individual dashboard cache
+      client.removeQueries({ queryKey: ["dashboards", dashboardId] });
+
+      return { previousDashboards, previousDashboard };
+    },
+    // If mutation fails, rollback
+    onError: (__, dashboardId, context) => {
+      if (context?.previousDashboards) {
+        client.setQueryData(["dashboards"], context.previousDashboards);
+      }
+      if (context?.previousDashboard) {
+        client.setQueryData(
+          ["dashboards", dashboardId],
+          context.previousDashboard,
+        );
+      }
+    },
+    // Handle success
     onSuccess: () => {
-      void client.invalidateQueries({ queryKey: ["dashboards"] });
       onComplete?.();
+    },
+    // Ensure eventual consistency
+    onSettled: (__, ___, dashboardId) => {
+      void client.invalidateQueries({ queryKey: ["dashboards"] });
+      void client.invalidateQueries({ queryKey: ["dashboards", dashboardId] });
     },
     mutationFn: async (id: string) => {
       const { data, error } = await supabase
@@ -289,11 +383,67 @@ export function useDeleteDashboard(onComplete?: () => void) {
 export function useUpdatedDashboard() {
   const client = useQueryClient();
   return useMutation({
-    onSuccess: (dashboard: Dashboard) => {
-      client.setQueryData(["dashboards"], (dashboards: Dashboard[]) =>
-        dashboards.map((d) => (d.id === dashboard.id ? dashboard : d)),
-      );
-      client.setQueryData(["dashboards", dashboard.id], () => dashboard);
+    // Optimistic update - immediately update the cache
+    onMutate: async ({ id, payload }) => {
+      // Cancel any outgoing refetches
+      await client.cancelQueries({ queryKey: ["dashboards"] });
+      await client.cancelQueries({ queryKey: ["dashboards", id] });
+
+      // Snapshot the previous values
+      const previousDashboards = client.getQueryData<Dashboard[]>([
+        "dashboards",
+      ]);
+      const previousDashboard = client.getQueryData<Dashboard>([
+        "dashboards",
+        id,
+      ]);
+
+      // Optimistically update the cache
+      if (previousDashboards) {
+        const updatedDashboards = previousDashboards.map((dashboard) =>
+          dashboard.id === id
+            ? { ...dashboard, ...payload, updated_at: new Date().toISOString() }
+            : dashboard,
+        );
+        client.setQueryData(["dashboards"], updatedDashboards);
+      }
+
+      if (previousDashboard) {
+        const updatedDashboard = {
+          ...previousDashboard,
+          ...payload,
+          updated_at: new Date().toISOString(),
+        };
+        client.setQueryData(["dashboards", id], updatedDashboard);
+      }
+
+      // Return context object with the snapshotted values
+      return { previousDashboards, previousDashboard };
+    },
+    // If the mutation fails, use the context returned from onMutate to roll back
+    onError: (__, { id }, context) => {
+      if (context?.previousDashboards) {
+        client.setQueryData(["dashboards"], context.previousDashboards);
+      }
+      if (context?.previousDashboard) {
+        client.setQueryData(["dashboards", id], context.previousDashboard);
+      }
+    },
+    // Update with real server data on success
+    onSuccess: (dashboard: Dashboard, { id }) => {
+      const dashboards = client.getQueryData<Dashboard[]>(["dashboards"]);
+      if (dashboards) {
+        const updatedDashboards = dashboards.map((d) =>
+          d.id === id ? dashboard : d,
+        );
+        client.setQueryData(["dashboards"], updatedDashboards);
+      }
+      client.setQueryData(["dashboards", id], dashboard);
+    },
+    // Always refetch after error or success to ensure we have the latest data
+    onSettled: (__, ___, { id }) => {
+      void client.invalidateQueries({ queryKey: ["dashboards"] });
+      void client.invalidateQueries({ queryKey: ["dashboards", id] });
     },
     mutationFn: async ({
       id,

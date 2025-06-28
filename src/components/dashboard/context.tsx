@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useMemo,
 } from "react";
 import { Layout } from "react-grid-layout";
 import { WIDGET_SIZES, widgets, WidgetType } from "./widget_registry";
@@ -60,7 +61,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     null,
   );
 
-  // API hooks
+  // API hooks - optimistic updates are handled automatically by React Query
   const { data: dashboards = [], isLoading, error } = useDashboards();
   const createDashboardMutation = useCreateDashboard((dashboard) => {
     setCurrentDashboardId(dashboard.id);
@@ -130,11 +131,6 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
 
   const updateLayoutData = (layout: LayoutItem[]) => {
     if (!currentDashboardId) return;
-
-    const currentDashboard = dashboards.find(
-      (d) => d.id === currentDashboardId,
-    );
-    if (!currentDashboard) return;
 
     updateDashboardMutation.mutate({
       id: currentDashboardId,
@@ -208,30 +204,41 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     });
   };
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      dashboards,
+      currentDashboardId,
+      setCurrentDashboardId,
+      createDashboard,
+      deleteDashboard,
+      getCurrentLayoutData,
+      updateLayoutData,
+      addWidget,
+      removeWidget,
+      isLoading:
+        isLoading ||
+        createDashboardMutation.isPending ||
+        deleteDashboardMutation.isPending,
+      error:
+        error || createDashboardMutation.error || deleteDashboardMutation.error,
+    }),
+    [
+      dashboards,
+      currentDashboardId,
+      isLoading,
+      createDashboardMutation.isPending,
+      updateDashboardMutation.isPending,
+      deleteDashboardMutation.isPending,
+      error,
+      createDashboardMutation.error,
+      updateDashboardMutation.error,
+      deleteDashboardMutation.error,
+    ],
+  );
+
   return (
-    <DashboardContext.Provider
-      value={{
-        dashboards,
-        currentDashboardId,
-        setCurrentDashboardId,
-        createDashboard,
-        deleteDashboard,
-        getCurrentLayoutData,
-        updateLayoutData,
-        addWidget,
-        removeWidget,
-        isLoading:
-          isLoading ||
-          createDashboardMutation.isPending ||
-          updateDashboardMutation.isPending ||
-          deleteDashboardMutation.isPending,
-        error:
-          error ||
-          createDashboardMutation.error ||
-          updateDashboardMutation.error ||
-          deleteDashboardMutation.error,
-      }}
-    >
+    <DashboardContext.Provider value={contextValue}>
       {children}
     </DashboardContext.Provider>
   );
