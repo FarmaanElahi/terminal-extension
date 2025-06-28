@@ -2,18 +2,7 @@ import { type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 
-declare global {
-  interface Window {
-    documentPictureInPicture: {
-      requestWindow: (a: unknown) => Promise<Window>;
-    };
-  }
-}
-
-function tradingViewInit(app: ReactNode, pip?: true) {
-  // Track if PiP window is open
-  let pipWindow: Window | null = null;
-
+function tradingViewInit(app: ReactNode) {
   // Inject our button next to the Chats button
   const injectButton = () => {
     // Find the Chats button
@@ -61,198 +50,35 @@ function tradingViewInit(app: ReactNode, pip?: true) {
       chatsButton.nextSibling,
     );
 
-    // Function to toggle Document PiP
-    const toggleDocumentPiP = async () => {
-      // If PiP window is already open, close it
-      if (pipWindow) {
-        pipWindow.close();
-        pipWindow = null;
-        extensionButton.setAttribute("aria-pressed", "false");
+    // Function to inject React app into chart page grid area
+    const injectReactApp = () => {
+      // Find the chart page grid area div
+      const chartPageGridArea = document.querySelectorAll(
+        'div[data-qa-id="chart-page-grid-area"]',
+      )?.[1];
+
+      if (!chartPageGridArea) {
+        console.warn("Chart page grid area not found, skipping injection");
         return;
       }
 
-      try {
-        // Check if Document PiP API is available
-        if (pip && "documentPictureInPicture" in window) {
-          // Open a PiP window with dimensions
-          pipWindow = await window.documentPictureInPicture.requestWindow({
-            width: 400,
-            height: 300,
-          });
+      // Clear the existing content and inject our React app
+      chartPageGridArea.innerHTML = "";
 
-          // Mark button as active
-          extensionButton.setAttribute("aria-pressed", "true");
+      // Create a container for our React app
+      const appContainer = document.createElement("div");
+      appContainer.id = "tv-extension-app-container";
+      appContainer.style.width = "100%";
+      appContainer.style.height = "100%";
 
-          // Create styles for the PiP window
-          const tvCSSUrl = document.body.getAttribute("data-tv-css-url");
-          const link = document.createElement("link");
-          link.rel = "stylesheet";
-          link.href = tvCSSUrl as string;
-          pipWindow.document.head.appendChild(link);
+      chartPageGridArea.appendChild(appContainer);
 
-          // Create content container
-          const content = document.createElement("div");
-          content.className = "content";
-
-          // Add elements to PiP document
-          pipWindow.document.body.appendChild(content);
-
-          // Render React app in the PiP window
-          createRoot(content).render(app);
-
-          // Close PiP window when it's closed by the user
-          pipWindow.addEventListener("pagehide", () => {
-            pipWindow = null;
-            extensionButton.setAttribute("aria-pressed", "false");
-          });
-        } else {
-          // Fallback for browsers without Document PiP support
-          createFloatingWindow();
-        }
-      } catch (error) {
-        console.error("Document PiP failed:", error);
-        // Fallback to floating window
-        createFloatingWindow();
-      }
+      // Render React app in the container
+      createRoot(appContainer).render(app);
     };
 
-    // Create a floating window as fallback
-    const createFloatingWindow = () => {
-      const container = document.getElementById(
-        "tv-extension-floating-container",
-      );
-      if (container) {
-        container.style.display = "flex";
-        extensionButton.setAttribute("aria-pressed", "true");
-        return;
-      }
-
-      const floatingContainer = document.createElement("div");
-      floatingContainer.id = "tv-extension-floating-container";
-      floatingContainer.style.position = "fixed";
-      floatingContainer.style.top = "60px";
-      floatingContainer.style.right = "20px";
-      floatingContainer.style.width = "400px";
-      floatingContainer.style.height = "300px";
-      floatingContainer.style.backgroundColor = "rgba(30, 34, 45, 0.95)";
-      floatingContainer.style.color = "#d1d4dc";
-      floatingContainer.style.zIndex = "10";
-      floatingContainer.style.borderRadius = "4px";
-      floatingContainer.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.3)";
-      floatingContainer.style.display = "flex";
-      floatingContainer.style.flexDirection = "column";
-      floatingContainer.style.overflow = "hidden";
-
-      // Create header
-      const header = document.createElement("div");
-      header.style.padding = "8px 12px";
-      header.style.display = "flex";
-      header.style.justifyContent = "space-between";
-      header.style.alignItems = "center";
-      header.style.borderBottom = "1px solid rgba(150, 150, 150, 0.2)";
-      header.style.cursor = "move";
-
-      const title = document.createElement("div");
-      title.textContent = "TradingView Extension";
-      title.style.fontWeight = "bold";
-
-      const closeButton = document.createElement("button");
-      closeButton.textContent = "×";
-      closeButton.style.background = "none";
-      closeButton.style.border = "none";
-      closeButton.style.color = "#d1d4dc";
-      closeButton.style.fontSize = "16px";
-      closeButton.style.cursor = "pointer";
-
-      header.appendChild(title);
-      header.appendChild(closeButton);
-
-      // Create content container for the React app
-      const content = document.createElement("div");
-      content.style.flex = "1";
-      content.style.overflow = "auto";
-      content.style.display = "flex";
-      content.style.flexDirection = "column";
-
-      floatingContainer.appendChild(header);
-      floatingContainer.appendChild(content);
-
-      document.body.appendChild(floatingContainer);
-
-      // Render React app in the content
-      createRoot(content).render(app);
-
-      // Make window draggable
-      let isDragging = false;
-      let dragOffsetX = 0;
-      let dragOffsetY = 0;
-
-      header.addEventListener("mousedown", (e) => {
-        isDragging = true;
-        dragOffsetX =
-          e.clientX - floatingContainer.getBoundingClientRect().left;
-        dragOffsetY = e.clientY - floatingContainer.getBoundingClientRect().top;
-      });
-
-      document.addEventListener("mousemove", (e) => {
-        if (isDragging) {
-          floatingContainer.style.left = e.clientX - dragOffsetX + "px";
-          floatingContainer.style.top = e.clientY - dragOffsetY + "px";
-          floatingContainer.style.right = "auto";
-        }
-      });
-
-      document.addEventListener("mouseup", () => {
-        isDragging = false;
-      });
-
-      // Handle close button
-      closeButton.addEventListener("click", () => {
-        floatingContainer.style.display = "none";
-        extensionButton.setAttribute("aria-pressed", "false");
-      });
-
-      // Add resize handle
-      const resizeHandle = document.createElement("div");
-      resizeHandle.style.position = "absolute";
-      resizeHandle.style.bottom = "0";
-      resizeHandle.style.right = "0";
-      resizeHandle.style.width = "15px";
-      resizeHandle.style.height = "15px";
-      resizeHandle.style.cursor = "nwse-resize";
-      resizeHandle.style.backgroundImage =
-        "linear-gradient(135deg, transparent 50%, rgba(150, 150, 150, 0.5) 50%)";
-
-      floatingContainer.appendChild(resizeHandle);
-
-      // Make window resizable
-      let isResizing = false;
-
-      resizeHandle.addEventListener("mousedown", (e) => {
-        isResizing = true;
-        e.preventDefault();
-      });
-
-      document.addEventListener("mousemove", (e) => {
-        if (isResizing) {
-          const width =
-            e.clientX - floatingContainer.getBoundingClientRect().left;
-          const height =
-            e.clientY - floatingContainer.getBoundingClientRect().top;
-          floatingContainer.style.width = Math.max(200, width) + "px"; // Minimum width of 200px
-          floatingContainer.style.height = Math.max(150, height) + "px"; // Minimum height of 150px
-        }
-      });
-
-      document.addEventListener("mouseup", () => {
-        isResizing = false;
-      });
-
-      extensionButton.setAttribute("aria-pressed", "true");
-    };
-
-    // Add click handler to toggle PiP
-    extensionButton.addEventListener("click", toggleDocumentPiP);
+    // Add click handler to inject React app
+    extensionButton.addEventListener("click", injectReactApp);
   };
 
   // Inject the button
@@ -277,16 +103,8 @@ function tradingViewInit(app: ReactNode, pip?: true) {
     const button = document.getElementById("tv-extension-toggle-button");
     if (button) button.remove();
 
-    const floatingContainer = document.getElementById(
-      "tv-extension-floating-container",
-    );
-    if (floatingContainer) floatingContainer.remove();
-
-    // Close PiP window if open
-    if (pipWindow) {
-      pipWindow.close();
-      pipWindow = null;
-    }
+    const appContainer = document.getElementById("tv-extension-app-container");
+    if (appContainer) appContainer.remove();
   };
 }
 
