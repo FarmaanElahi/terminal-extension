@@ -6,16 +6,19 @@ import { DashboardLayout } from "@/components/dashboard/layout";
 import { ThemeProvider } from "@/components/theme/theme-provider.tsx";
 import { SymbolProvider } from "@/hooks/use-symbol.tsx";
 import { Toaster } from "@/components/ui/sonner.tsx";
+import { RealtimeProvider } from "@/hooks/use-realtime.tsx";
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <SymbolProvider>
-          <DashboardLayout />
-          <Toaster />
-        </SymbolProvider>
-      </ThemeProvider>
+      <RealtimeProvider>
+        <ThemeProvider>
+          <SymbolProvider>
+            <DashboardLayout />
+            <Toaster />
+          </SymbolProvider>
+        </ThemeProvider>
+      </RealtimeProvider>
     </QueryClientProvider>
   );
 }

@@ -37,6 +37,25 @@ export function symbolQuote(symbol: string) {
   });
 }
 
+interface SymbolSearchOptions {
+  exchange?: string;
+  type?: string;
+  signal?: AbortSignal;
+  limit?: number;
+}
+
+export function useSymbolSearch(
+  q: string,
+  options?: Omit<SymbolSearchOptions, "signal">,
+) {
+  return useQuery({
+    queryKey: ["symbol_search", q, options],
+    enabled: !!q,
+    queryFn: async ({ signal }) =>
+      symbolSearchQueryFn(q, { ...options, signal }),
+  });
+}
+
 export function useSymbolQuote(symbolName?: string) {
   return useQuery({
     enabled: !!symbolName,
@@ -88,6 +107,30 @@ export function useDeleteScreen(onComplete?: () => void) {
       if (error) throw error;
       return data;
     },
+  });
+}
+
+async function symbolSearchQueryFn(q: string, option?: SymbolSearchOptions) {
+  const where = [
+    `"name" ILIKE '%${q}%'`,
+    option?.exchange ? `"exchange" = '${option.exchange}'` : undefined,
+    option?.type ? `"type" = '${option.type}'` : undefined,
+  ]
+    .filter((q) => q)
+    .join(" &");
+
+  return await queryScanner<Symbol>("symbols", {
+    columns: [
+      "ticker",
+      "name",
+      "description",
+      "type",
+      "logo",
+      "exchange",
+      "exchange_logo",
+    ],
+    where,
+    limit: option?.limit ?? 50,
   });
 }
 
