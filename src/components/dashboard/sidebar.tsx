@@ -76,7 +76,15 @@ export function LayoutSidebar({ isOpen, onClose }: LayoutSidebarProps) {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose} modal={false}>
-      <SheetContent side="right" className="w-80 p-0">
+      <SheetContent
+        side="right"
+        className="w-80 p-0"
+        // Prevent drag events from being blocked by the sheet
+        onPointerDownOutside={(e) => {
+          // Allow dragging to work across the sheet boundary
+          e.preventDefault();
+        }}
+      >
         <div className="flex flex-col h-full">
           {/* Header */}
           <SheetHeader className="p-4 border-b border-border">

@@ -18,9 +18,11 @@ export function DashboardContent() {
     error,
   } = useDashboard();
   const layoutData = getCurrentLayoutData();
-  console.log(layoutData);
 
   const handleLayoutChange = (layout: Layout[]) => {
+    // Only update if we have widgets to update
+    if (layoutData.layout.length === 0) return;
+
     // Merge the new layout positions with existing LayoutItems
     const updatedLayout: LayoutItem[] = layoutData.layout.map((item) => {
       const layoutUpdate = layout.find((l) => l.i === item.i);
@@ -81,9 +83,10 @@ export function DashboardContent() {
   );
 
   return (
-    <div className="h-full w-full p-4 bg-background">
-      {layoutData.layout.length === 0 ? (
-        <div className="h-full flex items-center justify-center border-2 border-dashed border-border rounded-lg">
+    <div className="h-full w-full p-4 bg-background relative">
+      {/* Empty State Message - positioned absolutely over the grid */}
+      {layoutData.layout.length === 0 && (
+        <div className="absolute inset-4 flex items-center justify-center border-2 border-dashed border-border rounded-lg z-10 pointer-events-none">
           <div className="text-center">
             <p className="text-muted-foreground text-lg mb-2">
               No widgets added yet
@@ -93,30 +96,31 @@ export function DashboardContent() {
             </p>
           </div>
         </div>
-      ) : (
-        <ResponsiveGridLayout
-          className="layout"
-          layouts={{ lg: gridLayout }}
-          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-          cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-          rowHeight={60}
-          onLayoutChange={handleLayoutChange}
-          onDrop={handleDrop}
-          isDroppable={true}
-          useCSSTransforms={true}
-          compactType="vertical"
-          preventCollision={false}
-        >
-          {layoutData.layout.map((layoutItem) => (
-            <div
-              key={layoutItem.i}
-              className="bg-card border border-border rounded-lg overflow-hidden"
-            >
-              <WidgetRenderer layoutItem={layoutItem} />
-            </div>
-          ))}
-        </ResponsiveGridLayout>
       )}
+
+      {/* Always render ResponsiveGridLayout for drag and drop */}
+      <ResponsiveGridLayout
+        className="layout"
+        layouts={{ lg: gridLayout }}
+        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+        cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+        rowHeight={60}
+        onLayoutChange={handleLayoutChange}
+        onDrop={handleDrop}
+        isDroppable={true}
+        useCSSTransforms={true}
+        compactType="vertical"
+        preventCollision={false}
+      >
+        {layoutData.layout.map((layoutItem) => (
+          <div
+            key={layoutItem.i}
+            className="bg-card border border-border rounded-lg overflow-hidden"
+          >
+            <WidgetRenderer layoutItem={layoutItem} />
+          </div>
+        ))}
+      </ResponsiveGridLayout>
     </div>
   );
 }
