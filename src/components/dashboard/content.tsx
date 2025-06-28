@@ -105,12 +105,6 @@ export function DashboardContent() {
 
   return (
     <div className="h-full w-full bg-background relative">
-      {/* Debug info */}
-      <div className="absolute top-2 left-2 text-xs text-muted-foreground bg-muted/80 p-2 rounded z-20">
-        Current Breakpoint: {currentBreakpoint} | Widgets:{" "}
-        {layoutData.layout.length}
-      </div>
-
       {/* Always render ResponsiveGridLayout for drag and drop */}
       <ResponsiveGridLayout
         className="layout h-full"
@@ -126,6 +120,8 @@ export function DashboardContent() {
         useCSSTransforms={mounted}
         measureBeforeMount={false}
         preventCollision={false}
+        draggableHandle=".drag-handle"
+        resizeHandles={["sw", "nw", "se", "ne"]}
       >
         {layoutData.layout.map((item) => {
           const { minW, minH } = WIDGET_SIZES[item.type] ?? {};

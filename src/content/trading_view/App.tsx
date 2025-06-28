@@ -1,4 +1,5 @@
 import "@/global.css";
+import "@/components/dashboard/dashboard-module.css";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/client";
 import { DashboardLayout } from "@/components/dashboard/layout";
