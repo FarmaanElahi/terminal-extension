@@ -1,8 +1,8 @@
-import React from "react";
-import { Responsive, WidthProvider, Layout } from "react-grid-layout";
+import { Layout, Responsive, WidthProvider } from "react-grid-layout";
 import { useDashboard } from "./context";
 import { WidgetRenderer } from "./widget_renderer";
-import { WidgetType } from "./widget_library";
+import { LayoutItem } from "./types";
+import { widgets } from "./widget_registry";
 import { Loader2 } from "lucide-react";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -20,7 +20,19 @@ export function DashboardContent() {
   const layoutData = getCurrentLayoutData();
 
   const handleLayoutChange = (layout: Layout[]) => {
-    updateLayoutData(layout);
+    // Merge the new layout positions with existing LayoutItems
+    const updatedLayout: LayoutItem[] = layoutData.layout.map((item) => {
+      const layoutUpdate = layout.find((l) => l.i === item.i);
+      if (layoutUpdate) {
+        return {
+          ...item,
+          ...layoutUpdate,
+        };
+      }
+      return item;
+    });
+
+    updateLayoutData(updatedLayout);
   };
 
   // @ts-ignore
@@ -29,14 +41,13 @@ export function DashboardContent() {
     const widgetData = dragEvent.dataTransfer?.getData("application/json");
 
     if (widgetData) {
-      const widget: WidgetType = JSON.parse(widgetData);
-      addWidget(widget, layoutItem);
+      try {
+        const widget: (typeof widgets)[0] = JSON.parse(widgetData);
+        addWidget(widget, layoutItem);
+      } catch (error) {
+        console.error("Failed to parse widget data:", error);
+      }
     }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
   };
 
   if (error) {
@@ -63,12 +74,14 @@ export function DashboardContent() {
     );
   }
 
+  // Convert LayoutItems to regular Layout objects for ResponsiveGridLayout
+  const gridLayout = layoutData.layout.map(
+    ({ type, settings, ...layout }) => layout,
+  );
+
   return (
-    <div
-      className="h-full w-full p-4 bg-background relative"
-      onDragOver={handleDragOver}
-    >
-      {layoutData.widgets.length === 0 ? (
+    <div className="h-full w-full p-4 bg-background">
+      {layoutData.layout.length === 0 ? (
         <div className="h-full flex items-center justify-center border-2 border-dashed border-border rounded-lg">
           <div className="text-center">
             <p className="text-muted-foreground text-lg mb-2">
@@ -82,7 +95,7 @@ export function DashboardContent() {
       ) : (
         <ResponsiveGridLayout
           className="layout"
-          layouts={{ lg: layoutData.layout }}
+          layouts={{ lg: gridLayout }}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
           cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
           rowHeight={60}
@@ -93,12 +106,12 @@ export function DashboardContent() {
           compactType="vertical"
           preventCollision={false}
         >
-          {layoutData.widgets.map((widget) => (
+          {layoutData.layout.map((layoutItem) => (
             <div
-              key={widget.id}
+              key={layoutItem.i}
               className="bg-card border border-border rounded-lg overflow-hidden"
             >
-              <WidgetRenderer widget={widget} />
+              <WidgetRenderer layoutItem={layoutItem} />
             </div>
           ))}
         </ResponsiveGridLayout>

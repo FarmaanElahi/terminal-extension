@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Plus, Trash2 } from "lucide-react";
+import { Check, Loader2, Plus, Trash2 } from "lucide-react";
 import { useDashboard } from "./context";
 import { WidgetLibrary } from "./widget_library";
 import {
@@ -29,7 +29,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Loader2 } from "lucide-react";
 
 interface LayoutSidebarProps {
   isOpen: boolean;
@@ -198,26 +197,6 @@ export function LayoutSidebar({ isOpen, onClose }: LayoutSidebarProps) {
                 </>
               )}
             </div>
-
-            {/* Current Dashboard Info */}
-            {currentDashboard && !isCreating && (
-              <div className="mt-3 p-3 bg-muted rounded-md">
-                <div className="text-sm">
-                  <div className="font-medium text-foreground">
-                    {currentDashboard.name}
-                  </div>
-                  {currentDashboard.description && (
-                    <div className="text-muted-foreground mt-1">
-                      {currentDashboard.description}
-                    </div>
-                  )}
-                  <div className="text-xs text-muted-foreground mt-2">
-                    Last updated:{" "}
-                    {new Date(currentDashboard.updated_at).toLocaleDateString()}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Widget Library */}
