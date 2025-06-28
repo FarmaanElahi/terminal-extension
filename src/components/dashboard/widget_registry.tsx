@@ -7,6 +7,7 @@ import { IdeasApp } from "./widget/idea_app.tsx";
 import { ChartApp } from "./widget/chart_app.tsx";
 import { DataPanelApp } from "./widget/data_panel.tsx";
 import { GroupRankingApp } from "./widget/group_ranking.tsx";
+import { MSIndiaApp } from "@/components/dashboard/widget/ms_india_app.tsx";
 
 export type WidgetType =
   | "screener"
@@ -15,7 +16,8 @@ export type WidgetType =
   | "ideas"
   | "chart"
   | "panel"
-  | "group_ranking";
+  | "group_ranking"
+  | "market_smith_india";
 
 export const widgetComponents: Record<
   WidgetType,
@@ -28,6 +30,7 @@ export const widgetComponents: Record<
   chart: ChartApp,
   panel: DataPanelApp,
   group_ranking: GroupRankingApp,
+  market_smith_india: MSIndiaApp,
 };
 
 export const widgets: Array<{
@@ -70,17 +73,23 @@ export const widgets: Array<{
     name: "Group Ranking",
     description: "Track group easily",
   },
+  {
+    type: "market_smith_india",
+    name: "MS India",
+    description: "Track CANSLIM for India Stock",
+  },
 ];
 
 export const WIDGET_SIZES: Record<
   WidgetType,
   { w: number; h: number; minW: number; minH: number }
 > = {
-  chart: { w: 6, h: 4, minW: 1, minH: 1 },
-  group_ranking: { w: 6, h: 4, minW: 1, minH: 1 },
-  watchlist: { w: 6, h: 4, minW: 1, minH: 1 },
-  screener: { w: 6, h: 4, minW: 1, minH: 1 },
-  stats: { w: 6, h: 2, minW: 1, minH: 1 },
-  ideas: { w: 6, h: 4, minW: 1, minH: 1 },
-  panel: { w: 6, h: 4, minW: 1, minH: 1 },
+  chart: { w: 3, h: 4, minW: 2, minH: 2 },
+  group_ranking: { w: 3, h: 4, minW: 2, minH: 2 },
+  watchlist: { w: 3, h: 4, minW: 2, minH: 2 },
+  screener: { w: 3, h: 4, minW: 2, minH: 2 },
+  stats: { w: 4, h: 2, minW: 2, minH: 2 },
+  ideas: { w: 3, h: 4, minW: 2, minH: 2 },
+  panel: { w: 3, h: 4, minW: 2, minH: 2 },
+  market_smith_india: { w: 3, h: 4, minW: 2, minH: 2 },
 };

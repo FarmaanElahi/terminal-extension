@@ -108,15 +108,16 @@ export function DashboardContent() {
       {currentBreakpoint}
       {/* Always render ResponsiveGridLayout for drag and drop */}
       <ResponsiveGridLayout
-        className="layout h-full"
+        className="layout h-full overflow-auto"
         style={{ height: "100%" }}
         breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-        cols={{ lg: 12, md: 8, sm: 6, xs: 4, xxs: 2 }}
+        cols={{ lg: 12, md: 9, sm: 6, xs: 3, xxs: 3 }}
         rowHeight={75}
         onLayoutChange={handleLayoutChange}
         onBreakpointChange={handleBreakpointChange}
         onDrop={handleDrop}
         isDroppable={true}
+        allowOverlap={false}
         onDropDragOver={() => ({ w: 6, h: 6 })}
         useCSSTransforms={mounted}
         measureBeforeMount={false}
