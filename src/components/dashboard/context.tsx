@@ -158,6 +158,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
 
     // Create layout item with widget type and settings
     const newLayoutItem: LayoutItem = {
+      ...layoutItem,
       i: widgetId,
       x: layoutItem?.x ?? 0,
       y: layoutItem?.y ?? 0,
@@ -167,7 +168,6 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
       minH: defaultSize.minH,
       type: widget.type as WidgetType,
       settings: {}, // Default empty settings
-      ...layoutItem,
     };
 
     console.log("Creating new layout item:", newLayoutItem);

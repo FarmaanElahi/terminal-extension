@@ -62,6 +62,7 @@ export function DashboardContent() {
 
     const dragEvent = _event as DragEvent;
     const widgetData = dragEvent.dataTransfer?.getData("application/json");
+    _event.preventDefault();
 
     console.log("Widget data from drag:", widgetData);
 
@@ -121,6 +122,7 @@ export function DashboardContent() {
         onBreakpointChange={handleBreakpointChange}
         onDrop={handleDrop}
         isDroppable={true}
+        onDropDragOver={() => ({ w: 6, h: 6 })}
         useCSSTransforms={mounted}
         measureBeforeMount={false}
         preventCollision={false}
