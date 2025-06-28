@@ -84,77 +84,17 @@ function tradingViewInit(app: ReactNode, pip?: true) {
           extensionButton.setAttribute("aria-pressed", "true");
 
           // Create styles for the PiP window
-          const style = document.createElement("style");
-          style.textContent = `
-            :root {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-              color-scheme: dark;
-            }
-            body {
-              margin: 0;
-              padding: 0;
-              background-color: rgba(30, 34, 45, 0.95);
-              color: #d1d4dc;
-              height: 100vh;
-              overflow: hidden;
-              display: flex;
-              flex-direction: column;
-            }
-            .header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              padding: 8px 12px;
-              border-bottom: 1px solid rgba(150, 150, 150, 0.2);
-              user-select: none;
-            }
-            .title {
-              font-weight: bold;
-            }
-            .close-button {
-              background: none;
-              border: none;
-              color: #d1d4dc;
-              font-size: 16px;
-              cursor: pointer;
-            }
-            .content {
-              flex: 1;
-              overflow: auto;
-              display: flex;
-              flex-direction: column;
-            }
-          `;
-
-          // Add styles to PiP window
-          pipWindow.document.head.appendChild(style);
-
-          // Create header with title and close button
-          const header = document.createElement("div");
-          header.className = "header";
-
-          const title = document.createElement("div");
-          title.className = "title";
-          title.textContent = "TradingView Extension";
-
-          const closeButton = document.createElement("button");
-          closeButton.className = "close-button";
-          closeButton.textContent = "×";
-          closeButton.addEventListener("click", () => {
-            pipWindow?.close();
-            pipWindow = null;
-            extensionButton.setAttribute("aria-pressed", "false");
-          });
-
-          header.appendChild(title);
-          header.appendChild(closeButton);
+          const tvCSSUrl = document.body.getAttribute("data-tv-css-url");
+          const link = document.createElement("link");
+          link.rel = "stylesheet";
+          link.href = tvCSSUrl as string;
+          pipWindow.document.head.appendChild(link);
 
           // Create content container
           const content = document.createElement("div");
           content.className = "content";
 
           // Add elements to PiP document
-          pipWindow.document.body.appendChild(header);
           pipWindow.document.body.appendChild(content);
 
           // Render React app in the PiP window
