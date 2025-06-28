@@ -20,6 +20,33 @@ import {
   UpdateScreen,
 } from "@/types/supabase";
 
+//##################### SYMBOL QUOTE #####################
+async function symbolQuoteQueryFn(ticker: string) {
+  const d = await queryDuckDB<Symbol>("symbols", {
+    where: `ticker = '${ticker}'`,
+    limit: 1,
+  });
+  if (d.length === 0) throw new Error("Cannot find quote");
+  return d[0];
+}
+
+export function symbolQuote(symbol: string) {
+  return queryClient.fetchQuery({
+    queryKey: ["symbol_quote", symbol],
+    queryFn: async () => symbolQuoteQueryFn(symbol),
+  });
+}
+
+export function useSymbolQuote(symbolName?: string) {
+  return useQuery({
+    enabled: !!symbolName,
+    queryKey: ["symbol_quote", symbolName],
+    queryFn: async () => symbolQuoteQueryFn(symbolName!),
+  });
+}
+
+//##################### SYMBOL QUOTE #####################
+
 //##################### SCREENS #####################
 export function useCreateScreen(onComplete?: (screen: Screen) => void) {
   const client = useQueryClient();

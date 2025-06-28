@@ -1,5 +1,6 @@
-import { WidgetSettings } from "../types";
+import { LayoutItem, WidgetSettings } from "../types";
 
 export interface WidgetProps {
-  settings?: WidgetSettings;
+  layout: LayoutItem;
+  updateSettings: (settings: WidgetSettings) => void;
 }

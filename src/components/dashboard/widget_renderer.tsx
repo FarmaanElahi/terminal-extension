@@ -49,7 +49,12 @@ export function WidgetRenderer({ layoutItem }: WidgetRendererProps) {
 
       {/* Widget Content */}
       <div className="flex-1 overflow-hidden">
-        <WidgetComponent settings={layoutItem.settings} />
+        <WidgetComponent
+          layout={layoutItem}
+          updateSettings={(s) => {
+            console.log("Setting updated", s);
+          }}
+        />
       </div>
     </div>
   );
