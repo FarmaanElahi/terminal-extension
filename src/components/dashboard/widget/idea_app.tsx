@@ -1,11 +1,11 @@
 import { WidgetProps } from "./widget-props";
 import { useSymbol, useSymbolSwitcher } from "@/hooks/use-symbol.tsx";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@/components/ui/avatar.tsx";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import Zoom from "react-medium-image-zoom";
+import { Controlled as ControlledZoom } from "react-medium-image-zoom";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,8 @@ import {
 import he from "he";
 import { useDiscussionFeed } from "@/lib/api";
 import { StockTwitFeed } from "@/lib/stock_twits.ts";
+import "react-medium-image-zoom/dist/styles.css";
+import "./idea_app.css";
 
 export function IdeasApp(_props: WidgetProps) {
   return <Ideas />;
@@ -177,6 +179,11 @@ function Message({ message }: MessageCardProps) {
     }
   };
 
+  const [isZoomed, setIsZoomed] = useState(false);
+  const handleZoomChange = useCallback((shouldZoom: boolean) => {
+    setIsZoomed(shouldZoom);
+  }, []);
+
   return (
     <article className="border-b border-border hover:bg-muted/50 transition-colors">
       <div className="p-4 space-y-3">
@@ -221,14 +228,22 @@ function Message({ message }: MessageCardProps) {
           {/* Image */}
           {entities.chart && (
             <div className="rounded-lg overflow-hidden border bg-muted">
-              <AspectRatio ratio={entities.chart.ratio ?? 16 / 9}>
-                <Zoom>
+              <AspectRatio
+                ratio={entities.chart.ratio ?? 16 / 9}
+                onClick={() => setIsZoomed(true)}
+              >
+                <ControlledZoom
+                  classDialog={"custom-zoom"}
+                  isZoomed={isZoomed}
+                  onZoomChange={handleZoomChange}
+                >
                   <img
                     src={entities.chart.url}
                     alt="Chart"
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                    onClick={console.log}
                   />
-                </Zoom>
+                </ControlledZoom>
               </AspectRatio>
             </div>
           )}
