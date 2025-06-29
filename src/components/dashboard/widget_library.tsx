@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { WIDGET_SIZES, widgets } from "./widget_registry";
+import { widgets } from "./widget_registry";
 
 export function WidgetLibrary() {
   const [draggedWidget, setDraggedWidget] = useState<string | null>(null);
@@ -42,10 +42,6 @@ export function WidgetLibrary() {
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                   {widget.description}
                 </p>
-                <div className="text-xs text-muted-foreground/70 mt-2">
-                  Default: {WIDGET_SIZES[widget.type].w}×
-                  {WIDGET_SIZES[widget.type].h}
-                </div>
               </div>
             </div>
           </div>

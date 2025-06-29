@@ -80,16 +80,13 @@ export const widgets: Array<{
   },
 ];
 
-export const WIDGET_SIZES: Record<
-  WidgetType,
-  { w: number; h: number; minW: number; minH: number }
-> = {
-  chart: { w: 3, h: 4, minW: 2, minH: 2 },
-  group_ranking: { w: 3, h: 4, minW: 2, minH: 2 },
-  watchlist: { w: 3, h: 4, minW: 2, minH: 2 },
-  screener: { w: 3, h: 4, minW: 2, minH: 2 },
-  stats: { w: 4, h: 2, minW: 2, minH: 2 },
-  ideas: { w: 3, h: 4, minW: 2, minH: 2 },
-  panel: { w: 3, h: 4, minW: 2, minH: 2 },
-  market_smith_india: { w: 3, h: 4, minW: 2, minH: 2 },
+export const WIDGET_SIZES: Record<WidgetType, { w: number; h: number }> = {
+  chart: { w: 3, h: 4 },
+  group_ranking: { w: 3, h: 4 },
+  watchlist: { w: 3, h: 4 },
+  screener: { w: 3, h: 4 },
+  stats: { w: 4, h: 2 },
+  ideas: { w: 3, h: 4 },
+  panel: { w: 3, h: 4 },
+  market_smith_india: { w: 3, h: 4 },
 };

@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Layout, Responsive, WidthProvider } from "react-grid-layout";
 import { useDashboard } from "./context";
 import { WidgetRenderer } from "./widget_renderer";
 import { LayoutItem } from "./types";
-import { WIDGET_SIZES, widgets } from "./widget_registry";
+import { widgets } from "./widget_registry";
 import { Loader2 } from "lucide-react";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -61,9 +61,7 @@ export function DashboardContent() {
             x,
             y,
             w: width,
-            h: item.h || 4, // Use existing height or default to 4
-            minW: WIDGET_SIZES[item.type]?.minW || 1,
-            minH: WIDGET_SIZES[item.type]?.minH || 1,
+            h: item.h || 4,
           };
         });
 
@@ -181,11 +179,9 @@ export function DashboardContent() {
         margin={[10, 10]}
       >
         {layoutData.layout.map((item) => {
-          const { minW, minH } = WIDGET_SIZES[item.type] ?? {};
           return (
             <div
               key={item.i}
-              data-grid={{ ...item, minW, minH }}
               className="bg-card border border-border rounded-lg overflow-hidden select-none shadow-sm hover:shadow-md transition-shadow"
             >
               <WidgetRenderer layoutItem={item} />
