@@ -5,7 +5,7 @@ export function MSIndiaApp() {
   const symbol = useSymbol();
   const url = useMemo(
     () =>
-      symbol.startsWith("NSE:")
+      symbol?.startsWith("NSE:")
         ? `https://msindia.farmaan.xyz/mstool/eval/${symbol.split(":")[1]}/evaluation.jsp#/`
         : null,
     [symbol],

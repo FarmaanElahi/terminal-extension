@@ -164,8 +164,6 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
       y: layoutItem?.y ?? 0,
       w: layoutItem?.w ?? defaultSize.w,
       h: layoutItem?.h ?? defaultSize.h,
-      minW: defaultSize.minW,
-      minH: defaultSize.minH,
       type: widget.type as WidgetType,
       settings: {}, // Default empty settings
     };
