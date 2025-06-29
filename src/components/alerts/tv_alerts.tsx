@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useSymbol } from "@/hooks/use-symbol";
-import { useAlerts, useDeleteAlert } from "@/lib/api";
+import { useAlerts, useDeleteAlert, useUpdateAlert } from "@/lib/api";
 import { IOrderLine } from "@/types/tradingview";
 import { Alert } from "@/types/supabase";
 import { AlertBuilder, AlertParams } from "@/components/alerts/alert_builder";
@@ -27,6 +27,7 @@ export function TradingViewAlerts() {
   const currentSymbol = useSymbol();
   const { data: alerts = [], isLoading, error } = useAlerts();
   const deleteAlertMutation = useDeleteAlert();
+  const updateAlertMutation = useUpdateAlert();
 
   // Track orderline references without causing re-renders
   const orderLineReferencesRef = useRef<OrderLineReference[]>([]);
@@ -361,6 +362,25 @@ export function TradingViewAlerts() {
     orderLine.onModify(() => {
       handleOrderLineModification(alert);
     });
+
+    // Handle move - update alert price when orderline is moved
+    orderLine.onMove(() => {
+      const newPrice = orderLine.getPrice();
+      console.log(`📍 Alert ${alert.id} moved to price: ${newPrice}`);
+      updateAlertMutation.mutate(
+        {
+          id: alert.id,
+          payload: {
+            rhs_attr: { constant: newPrice },
+          },
+        },
+        {
+          onError: (error) => {
+            console.error(`Failed to update alert ${alert.id}:`, error);
+          },
+        },
+      );
+    });
   };
 
   /**
@@ -368,6 +388,19 @@ export function TradingViewAlerts() {
    */
   const handleOrderLineCancellation = (alertId: string) => {
     console.log(`🗑️ Alert ${alertId} cancelled via orderline`);
+
+    // Find and remove the orderline from TradingView chart
+    const orderLineRef = orderLineReferencesRef.current.find(
+      (ref) => ref.alertId === alertId,
+    );
+
+    if (orderLineRef) {
+      try {
+        orderLineRef.orderLine.remove();
+      } catch (error) {
+        console.warn(`Failed to remove orderline for alert ${alertId}:`, error);
+      }
+    }
 
     // Remove from local references
     removeOrderLineReference(alertId);
