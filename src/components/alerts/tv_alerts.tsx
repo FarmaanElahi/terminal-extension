@@ -33,6 +33,9 @@ export function TradingViewAlerts() {
   const orderLineReferencesRef = useRef<OrderLineReference[]>([]);
   const isInitializedRef = useRef(false);
 
+  // Track crosshair position without causing re-renders
+  const crosshairPriceRef = useRef<number | null>(null);
+
   // Alert builder state
   const [alertBuilderOpen, setAlertBuilderOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | undefined>();
@@ -53,9 +56,20 @@ export function TradingViewAlerts() {
 
         // Setup symbol change listener
         setupSymbolChangeListener();
+
+        // Setup crosshair tracking
+        const unsubCrossHair = setupCrosshairListener();
+
+        // Setup keyboard shortcuts
+        const unsubKeyboardShortcuts = setupKeyboardShortcuts();
+
         isInitializedRef.current = true;
 
         console.log("📊 TradingView Alerts component initialized");
+        return () => {
+          unsubCrossHair?.();
+          unsubKeyboardShortcuts?.();
+        };
       } catch (error) {
         console.error("Failed to initialize TradingView Alerts:", error);
       }
@@ -63,6 +77,68 @@ export function TradingViewAlerts() {
 
     void initializeTradingView();
   }, [currentSymbol]);
+
+  /**
+   * Setup crosshair movement listener to track current price
+   */
+  const setupCrosshairListener = () => {
+    try {
+      const chart = TradingViewApi.chart();
+      const cb = (p: { price: number; time: number }) =>
+        (crosshairPriceRef.current = Number(p.price.toFixed(2)));
+      chart.crossHairMoved().subscribe("alert-crosshair", cb);
+      return () => chart.crossHairMoved().unsubscribe(cb);
+    } catch (error) {
+      console.error("Failed to setup crosshair listener:", error);
+    }
+  };
+
+  /**
+   * Setup keyboard shortcuts for alert creation
+   */
+  const setupKeyboardShortcuts = () => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Cmd + Shift + A (Mac) or Ctrl + Shift + A (Windows/Linux)
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.shiftKey &&
+        event.key === "A"
+      ) {
+        event.preventDefault();
+        handleCreateAlertShortcut();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Return cleanup function
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  };
+
+  /**
+   * Handles the keyboard shortcut for creating a new alert
+   * Creates alert with current symbol and crosshair price
+   */
+  const handleCreateAlertShortcut = () => {
+    if (!currentSymbol) {
+      console.warn("No symbol available for alert creation");
+      return;
+    }
+    const newAlertParams: AlertParams = {
+      type: "constant",
+      symbol: currentSymbol,
+      params: {
+        constant: crosshairPriceRef?.current ?? 0, // Use crosshair price or fallback to 0
+      },
+    };
+
+    // Reset state and open alert builder for new alert
+    setSelectedAlert(undefined);
+    setAlertParams(newAlertParams);
+    setAlertBuilderOpen(true);
+  };
 
   /**
    * Setup listener for symbol changes in TradingView
@@ -77,6 +153,9 @@ export function TradingViewAlerts() {
         if (newSymbol && newSymbol !== currentSymbol && currentSymbol) {
           console.log(`🔄 Symbol changed: ${currentSymbol} → ${newSymbol}`);
           removeOrderLinesForSymbol(currentSymbol);
+
+          // Reset crosshair price when symbol changes
+          crosshairPriceRef.current = null;
         }
       };
 
@@ -118,6 +197,7 @@ export function TradingViewAlerts() {
     return () => {
       removeAllOrderLines();
       isInitializedRef.current = false;
+      crosshairPriceRef.current = null;
     };
   }, []);
 

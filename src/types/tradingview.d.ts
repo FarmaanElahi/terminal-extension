@@ -201,6 +201,7 @@ export declare global {
     chart: () => {
       onSymbolChanged: () => Subscription<ResolvedSymbol>;
       createOrderLine: () => Promise<IOrderLine>;
+      crossHairMoved: () => Subscription<{ price: number; time: number }>;
     };
   };
 }
