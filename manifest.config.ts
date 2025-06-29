@@ -15,6 +15,11 @@ export default defineManifest({
   },
   content_scripts: [
     {
+      js: ["src/content/trading_view/tv_content.ts"],
+      matches: ["https://in.tradingview.com/*"],
+      run_at: "document_start",
+    },
+    {
       // @ts-ignore
       world: "MAIN",
       js: ["src/content/trading_view/tv.tsx"],
@@ -46,4 +51,8 @@ export default defineManifest({
     },
   ],
   host_permissions: ["<all_urls>"],
+  background: {
+    service_worker: "src/background/main.ts",
+    type: "module",
+  },
 });

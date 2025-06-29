@@ -1,40 +1,31 @@
 import "@/global.css";
-import { useEffect, useMemo, useState } from "react";
+import "@/components/dashboard/dashboard-module.css";
+import "@/components/grid/ag-theme.css";
+import "@/lib/fetch";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/client";
+import { DashboardLayout } from "@/components/dashboard/layout";
+import { ThemeProvider } from "@/components/theme/theme-provider.tsx";
+import { SymbolProvider } from "@/hooks/use-symbol.tsx";
+import { Toaster } from "@/components/ui/sonner.tsx";
+import { RealtimeProvider } from "@/hooks/use-realtime.tsx";
+import { TempFilterProvider } from "@/hooks/use-temp-filter.tsx";
+import { TradingViewAlerts } from "@/components/alerts/tv_alerts.tsx";
 
 export default function App() {
-  const [symbol, setSymbol] = useState<string>();
-  useEffect(() => {
-    const subscription = TradingViewApi.chart().onSymbolChanged();
-    const cb = (p: Record<string, unknown>) => setSymbol(p.name as string);
-    setSymbol(TradingViewApi.getSymbolInterval().symbol?.split(":")?.[1]);
-    subscription.subscribe("sds", cb);
-    return () => subscription.unsubscribe(cb);
-  }, []);
-
-  const url = useMemo(
-    () =>
-      symbol
-        ? `https://msindia.farmaan.xyz/mstool/eval/${symbol}/evaluation.jsp#/`
-        : null,
-    [symbol],
-  );
-
   return (
-    <div style={{ height: "100%", width: "100%" }}>
-      {url && (
-        <iframe
-          title={"MS India"}
-          src={url}
-          className="h-full w-full"
-          style={{
-            width: "100%",
-            height: "100%",
-            border: "none",
-            minWidth: "100%",
-            minHeight: "100%",
-          }}
-        />
-      )}
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <RealtimeProvider>
+        <ThemeProvider>
+          <SymbolProvider>
+            <TempFilterProvider>
+              <DashboardLayout />
+              <Toaster />
+              <TradingViewAlerts />
+            </TempFilterProvider>
+          </SymbolProvider>
+        </ThemeProvider>
+      </RealtimeProvider>
+    </QueryClientProvider>
   );
 }

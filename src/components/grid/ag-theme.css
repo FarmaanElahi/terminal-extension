@@ -1,0 +1,46 @@
+.ag-terminal-theme {
+    --ag-background-color: var(--background);
+    --ag-foreground-color: var(--foreground);
+    --ag-header-background-color: var(--background);
+    --ag-header-text-color: var(--foreground);
+    --ag-font-size: 14px;
+    /*noinspection CssUnresolvedCustomProperty*/
+    --ag-font-family: var(--default-font-family);
+    --ag-row-hover-color: var(--muted);
+    --ag-selected-row-background-color: var(--secondary);
+
+    /* Example additional custom styling for headers */
+    --ag-header-height: 40px;
+    --ag-header-cell-horizontal-padding: 10px;
+    /* use dark scrollbars */
+    --ag-browser-color-scheme: dark;
+    --ag-wrapper-border-radius: 0;
+}
+
+.ag-terminal-theme .ag-row-selected {
+    /*@apply bg-secondary*/
+}
+
+.ag-terminal-theme .ag-header-cell-text {
+}
+
+.ag-terminal-theme .ag-status-bar {
+    max-height: 32px;
+    align-items: center;
+}
+
+.ag-terminal-theme .ag-header {
+    /*@apply w-full flex items-center p-0 justify-between text-xs  text-muted-foreground rounded-t-md bg-muted/60 hover:bg-muted transition-colors*/
+}
+
+.ag-terminal-theme .ag-header-cell-menu-button {
+    display: none;
+}
+
+.ag-terminal-theme .ag-header-cell-label {
+    justify-content: space-between;
+}
+
+.ag-terminal-theme .ag-sort-indicator-container {
+    gap: 0;
+}
