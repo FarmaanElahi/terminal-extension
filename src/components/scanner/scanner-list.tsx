@@ -1,4 +1,11 @@
-import { HTMLAttributes, useCallback, useMemo, useRef, useState } from "react";
+import {
+  HTMLAttributes,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useAllScanner, useScanners, useUpdateScanner } from "@/lib/api";
 import {
   AgColumn,
@@ -33,6 +40,7 @@ import { Scanner } from "@/types/supabase";
 import { RealtimeDatasource } from "@/components/grid/datasource";
 import { useCurrentScanner } from "@/hooks/use-active-scanner";
 import { useSymbolSwitcher } from "@/hooks/use-symbol.tsx";
+import { useTempFilter } from "@/hooks/use-temp-filter.tsx";
 
 type ScannerListProps = HTMLAttributes<HTMLDivElement>;
 
@@ -255,21 +263,21 @@ function useGridBase(scanner?: Scanner, scanners?: Scanner[]) {
     [],
   );
 
-  // const filter = useGroupFilter();
+  const filter = useTempFilter();
   const ref = useRef<GridApi | null>(null);
-  // useEffect(() => {
-  //   if (type === "Watchlist" || !ref.current) return;
-  //
-  //   if (filter?.state?.advancedFilterModel) {
-  //     console.log("Temp filter added", filter);
-  //     ref.current?.setAdvancedFilterModel(filter.state?.advancedFilterModel);
-  //     ref.current?.refreshServerSide({ purge: true });
-  //   } else {
-  //     console.log("Temp filter removed");
-  //     ref.current?.setAdvancedFilterModel(null);
-  //     ref.current?.refreshServerSide({ purge: true });
-  //   }
-  // }, [filter, scanner?.id, type]);
+  useEffect(() => {
+    if (type === "Watchlist" || !ref.current) return;
+
+    if (filter?.state) {
+      console.log("Temp filter added", filter);
+      ref.current?.setAdvancedFilterModel(filter.state);
+      ref.current?.refreshServerSide({ purge: true });
+    } else {
+      console.log("Temp filter removed");
+      ref.current?.setAdvancedFilterModel(null);
+      ref.current?.refreshServerSide({ purge: true });
+    }
+  }, [filter, scanner?.id, type]);
 
   return {
     ref,

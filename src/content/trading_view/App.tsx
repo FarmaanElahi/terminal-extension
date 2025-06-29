@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/theme/theme-provider.tsx";
 import { SymbolProvider } from "@/hooks/use-symbol.tsx";
 import { Toaster } from "@/components/ui/sonner.tsx";
 import { RealtimeProvider } from "@/hooks/use-realtime.tsx";
+import { TempFilterProvider } from "@/hooks/use-temp-filter.tsx";
 
 export default function App() {
   return (
@@ -15,8 +16,10 @@ export default function App() {
       <RealtimeProvider>
         <ThemeProvider>
           <SymbolProvider>
-            <DashboardLayout />
-            <Toaster />
+            <TempFilterProvider>
+              <DashboardLayout />
+              <Toaster />
+            </TempFilterProvider>
           </SymbolProvider>
         </ThemeProvider>
       </RealtimeProvider>

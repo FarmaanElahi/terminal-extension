@@ -209,7 +209,7 @@ function GroupLeader({
                 <div className="flex items-center gap-2">
                   <img
                     src={[
-                      `${process.env.NEXT_PUBLIC_LOGO_BASE_URL}`,
+                      import.meta.env.VITE_LOGO_BASE_URL,
                       `${symbol.logo}.svg`,
                     ].join("/")}
                     alt={symbol.ticker || ""}
