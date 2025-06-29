@@ -68,6 +68,9 @@ importers:
       ag-grid-react:
         specifier: ^34.0.0
         version: 34.0.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      chroma-js:
+        specifier: ^3.1.2
+        version: 3.1.2
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -120,6 +123,9 @@ importers:
       '@crxjs/vite-plugin':
         specifier: ^2.0.2
         version: 2.0.2
+      '@types/chroma-js':
+        specifier: ^3.1.1
+        version: 3.1.1
       '@types/chrome':
         specifier: ^0.0.326
         version: 0.0.326
@@ -1113,6 +1119,9 @@ packages:
   '@types/babel__traverse@7.20.7':
     resolution: {integrity: sha512-dkO5fhS7+/oos4ciWxyEyjWe48zmG6wbCheo/G2ZnHx4fs3EU6YC6UM8rk56gAjNJ9P3MTH2jo5jb92/K6wbng==}
 
+  '@types/chroma-js@3.1.1':
+    resolution: {integrity: sha512-SFCr4edNkZ1bGaLzGz7rgR1bRzVX4MmMxwsIa3/Bh6ose8v+hRpneoizHv0KChdjxaXyjRtaMq7sCuZSzPomQA==}
+
   '@types/chrome@0.0.326':
     resolution: {integrity: sha512-WS7jKf3ZRZFHOX7dATCZwqNJgdfiSF0qBRFxaO0LhIOvTNBrfkab26bsZwp6EBpYtqp8loMHJTnD6vDTLWPKYw==}
 
@@ -1225,6 +1234,9 @@ packages:
   chownr@3.0.0:
     resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
     engines: {node: '>=18'}
+
+  chroma-js@3.1.2:
+    resolution: {integrity: sha512-IJnETTalXbsLx1eKEgx19d5L6SRM7cH4vINw/99p/M11HCuXGRWL+6YmCm7FWFGIo6dtWuQoQi1dc5yQ7ESIHg==}
 
   class-variance-authority@0.7.1:
     resolution: {integrity: sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==}
@@ -2806,6 +2818,8 @@ snapshots:
     dependencies:
       '@babel/types': 7.27.7
 
+  '@types/chroma-js@3.1.1': {}
+
   '@types/chrome@0.0.326':
     dependencies:
       '@types/filesystem': 0.0.36
@@ -2949,6 +2963,8 @@ snapshots:
       whatwg-mimetype: 4.0.0
 
   chownr@3.0.0: {}
+
+  chroma-js@3.1.2: {}
 
   class-variance-authority@0.7.1:
     dependencies:

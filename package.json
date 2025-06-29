@@ -29,6 +29,7 @@
     "ag-grid-community": "^34.0.0",
     "ag-grid-enterprise": "^34.0.0",
     "ag-grid-react": "^34.0.0",
+    "chroma-js": "^3.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -48,6 +49,7 @@
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.2",
+    "@types/chroma-js": "^3.1.1",
     "@types/chrome": "^0.0.326",
     "@types/luxon": "^3.6.2",
     "@types/node": "^22.15.33",

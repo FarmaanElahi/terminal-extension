@@ -59,7 +59,7 @@ export function SymbolProvider({ children }: { children?: ReactNode }) {
 }
 
 export function useSymbol() {
-  return useContext(SymbolContext)?.symbol ?? "NSE:RELIANCE";
+  return useContext(SymbolContext)?.symbol;
 }
 
 export function useSymbolSwitcher() {

@@ -452,7 +452,7 @@ export function CreateScanner({
                                         className="flex justify-between cursor-pointer"
                                       >
                                         <div className="flex items-center">
-                                          <span className="font-medium mr-2">
+                                          <span className="mr-2">
                                             {result.name}
                                           </span>
                                           <span className="text-sm text-muted-foreground truncate">
