@@ -20,7 +20,8 @@ export function DashboardContent() {
   } = useDashboard();
 
   const [mounted, setMounted] = useState(false);
-  const [currentBreakpoint, setCurrentBreakpoint] = useState("lg");
+  const [currentBreakpoint, setCurrentBreakpoint] =
+    useState<keyof typeof breakpoints>("lg");
 
   const layoutData = getCurrentLayoutData();
 
@@ -33,8 +34,9 @@ export function DashboardContent() {
   }, []);
 
   // Generate bootstrap-style responsive layouts
-  const generateResponsiveLayouts = useMemo(() => {
-    if (!layoutData.layout.length) return {};
+  const responsiveLayout = useMemo(() => {
+    if (!layoutData.layout.length)
+      return {} as Record<keyof typeof breakpoints, LayoutItem[]>;
 
     // Bootstrap-style widths for different breakpoints
     const bootstrapWidths = {
@@ -51,23 +53,26 @@ export function DashboardContent() {
           bootstrapWidths[breakpoint as keyof typeof bootstrapWidths];
         const colCount = cols[breakpoint as keyof typeof cols];
 
-        layouts[breakpoint] = layoutData.layout.map((item, index) => {
-          // Calculate position based on bootstrap-style grid
-          const x = (index * width) % colCount;
-          const y = Math.floor((index * width) / colCount) * 4; // Stack rows properly
+        layouts[breakpoint as keyof typeof breakpoints] = layoutData.layout.map(
+          (item, index) => {
+            // Calculate position based on bootstrap-style grid
+            const x = (index * width) % colCount;
+            const y = Math.floor((index * width) / colCount) * 4; // Stack rows properly
 
-          return {
-            i: item.i,
-            x,
-            y,
-            w: width,
-            h: item.h || 4,
-          };
-        });
+            return {
+              ...item,
+              i: item.i,
+              x,
+              y,
+              w: width,
+              h: item.h || 4,
+            };
+          },
+        );
 
         return layouts;
       },
-      {} as { [key: string]: Layout[] },
+      {} as Record<keyof typeof breakpoints, LayoutItem[]>,
     );
   }, [layoutData.layout]);
 
@@ -100,7 +105,7 @@ export function DashboardContent() {
   };
 
   const handleBreakpointChange = (breakpoint: string) => {
-    setCurrentBreakpoint(breakpoint);
+    setCurrentBreakpoint(breakpoint as keyof typeof breakpoints);
   };
 
   const handleDrop = (layout: Layout[], layoutItem: Layout, _event: Event) => {
@@ -160,7 +165,7 @@ export function DashboardContent() {
         style={{ height: "100%" }}
         breakpoints={breakpoints}
         cols={cols}
-        layouts={generateResponsiveLayouts}
+        layouts={responsiveLayout}
         rowHeight={75}
         onLayoutChange={handleLayoutChange}
         onBreakpointChange={handleBreakpointChange}
@@ -178,7 +183,7 @@ export function DashboardContent() {
         compactType="vertical"
         margin={[10, 10]}
       >
-        {layoutData.layout.map((item) => {
+        {responsiveLayout[currentBreakpoint]?.map((item) => {
           return (
             <div
               key={item.i}
