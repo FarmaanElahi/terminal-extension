@@ -186,7 +186,7 @@ function GroupLeader({
   }
 
   return (
-    <div className="px-4 text-sm bg-muted/5 max-h-96 overflow-auto">
+    <div className="px-4 text-sm max-h-96 overflow-auto">
       <table className="w-full">
         <thead className="sticky top-0 bg-background z-10">
           <tr className="text-xs font-semibold text-muted-foreground py-2">
@@ -219,9 +219,7 @@ function GroupLeader({
                   />
                   <span
                     className="hover:underline cursor-pointer"
-                    onClick={() =>
-                      switcher({ symbol: symbol.ticker as string })
-                    }
+                    onClick={() => switcher(symbol.ticker as string)}
                   >
                     {symbol.name}
                   </span>
@@ -750,25 +748,7 @@ function GroupList({
                 <div className="flex items-center gap-2 w-32 overflow-clip">
                   <span
                     className="hover:underline cursor-pointer"
-                    onClick={() =>
-                      switcher({
-                        symbol: d.symbol,
-                        state: {
-                          advancedFilterModel: {
-                            filterType: "join",
-                            type: "AND",
-                            conditions: [
-                              {
-                                colId: category,
-                                filterType: "text",
-                                filter: d.symbol,
-                                type: "equals",
-                              },
-                            ],
-                          },
-                        },
-                      })
-                    }
+                    onClick={() => switcher(d.symbol)}
                   >
                     {d.symbol}
                   </span>
