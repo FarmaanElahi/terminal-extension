@@ -173,6 +173,22 @@ export function TradingViewAlerts() {
   };
 
   /**
+   * Checks if two alerts have different content that would require orderline update
+   */
+  const hasAlertChanged = (oldAlert: Alert, newAlert: Alert): boolean => {
+    const oldPrice = extractPriceFromAlert(oldAlert);
+    const newPrice = extractPriceFromAlert(newAlert);
+
+    return (
+      oldPrice !== newPrice ||
+      oldAlert.notes !== newAlert.notes ||
+      oldAlert.symbol !== newAlert.symbol ||
+      oldAlert.rhs_type !== newAlert.rhs_type ||
+      JSON.stringify(oldAlert.rhs_attr) !== JSON.stringify(newAlert.rhs_attr)
+    );
+  };
+
+  /**
    * Removes orderlines for a specific symbol
    */
   const removeOrderLinesForSymbol = (symbol: string) => {
@@ -240,6 +256,7 @@ export function TradingViewAlerts() {
       const relevantAlerts = getRelevantAlerts();
 
       await removeObsoleteOrderLines(relevantAlerts);
+      await updateExistingOrderLines(relevantAlerts);
       await createMissingOrderLines(relevantAlerts, chart);
     } catch (error) {
       console.error("Failed to synchronize orderlines:", error);
@@ -269,6 +286,58 @@ export function TradingViewAlerts() {
         }
 
         return shouldKeep;
+      },
+    );
+  };
+
+  /**
+   * Updates existing orderlines when their corresponding alerts have changed
+   */
+  const updateExistingOrderLines = async (currentAlerts: Alert[]) => {
+    const alertsById = new Map(currentAlerts.map((alert) => [alert.id, alert]));
+
+    // Update existing orderline references with new alert data and check for changes
+    orderLineReferencesRef.current = orderLineReferencesRef.current.map(
+      (ref) => {
+        const updatedAlert = alertsById.get(ref.alertId);
+
+        if (updatedAlert && hasAlertChanged(ref.alert, updatedAlert)) {
+          try {
+            const newPrice = extractPriceFromAlert(updatedAlert);
+
+            if (typeof newPrice === "number" && !isNaN(newPrice)) {
+              // Update orderline with new alert data
+              configureOrderLine(ref.orderLine, updatedAlert, newPrice);
+              console.log(
+                `🔄 Updated orderline for alert ${updatedAlert.id} (${currentSymbol} @ ${newPrice})`,
+              );
+
+              // Return updated reference with new alert data
+              return {
+                ...ref,
+                alert: updatedAlert,
+              };
+            } else {
+              console.warn(
+                `Invalid price for updated alert ${updatedAlert.id}:`,
+                newPrice,
+              );
+            }
+          } catch (error) {
+            console.error(
+              `Failed to update orderline for alert ${updatedAlert.id}:`,
+              error,
+            );
+          }
+        } else if (updatedAlert) {
+          // Alert exists but no changes, just update the reference
+          return {
+            ...ref,
+            alert: updatedAlert,
+          };
+        }
+
+        return ref;
       },
     );
   };
@@ -375,12 +444,29 @@ export function TradingViewAlerts() {
           },
         },
         {
+          onSuccess: () => {
+            // Update the stored alert reference with new price
+            updateStoredAlertReference(alert.id, {
+              ...alert,
+              rhs_attr: { constant: newPrice },
+            });
+          },
           onError: (error) => {
             console.error(`Failed to update alert ${alert.id}:`, error);
           },
         },
       );
     });
+  };
+
+  /**
+   * Updates the stored alert reference for a specific alert
+   */
+  const updateStoredAlertReference = (alertId: string, updatedAlert: Alert) => {
+    orderLineReferencesRef.current = orderLineReferencesRef.current.map(
+      (ref) =>
+        ref.alertId === alertId ? { ...ref, alert: updatedAlert } : ref,
+    );
   };
 
   /**
@@ -419,11 +505,17 @@ export function TradingViewAlerts() {
   const handleOrderLineModification = (alert: Alert) => {
     console.log(`✏️ Modifying alert ${alert.id} via orderline`);
 
+    // Get the most current alert data from references
+    const currentRef = orderLineReferencesRef.current.find(
+      (ref) => ref.alertId === alert.id,
+    );
+    const currentAlert = currentRef?.alert || alert;
+
     // Convert alert to AlertParams format
-    const params = convertAlertToParams(alert);
+    const params = convertAlertToParams(currentAlert);
 
     // Set state to open alert builder with existing alert data
-    setSelectedAlert(alert);
+    setSelectedAlert(currentAlert);
     setAlertParams(params);
     setAlertBuilderOpen(true);
   };
