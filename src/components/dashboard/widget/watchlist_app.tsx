@@ -1,25 +1,18 @@
-import { Eye } from "lucide-react";
+import { ScannerProvider } from "@/hooks/use-active-scanner.tsx";
+import { ScannerSelector } from "@/components/scanner/scanner-selector.tsx";
+import { ScannerList } from "@/components/scanner/scanner-list.tsx";
 
 export function WatchlistApp() {
   return (
-    <div className="h-full flex flex-col items-center justify-center p-4 bg-background">
-      <Eye className="w-12 h-12 text-primary mb-4" />
-      <h3 className="text-lg font-semibold text-foreground mb-2">Watchlist</h3>
-      <p className="text-sm text-muted-foreground text-center">
-        Track and monitor your favorite stocks
-      </p>
-      <div className="mt-4 w-full space-y-2">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-8 bg-muted/50 rounded border border-border flex items-center px-3"
-          >
-            <span className="text-xs text-muted-foreground">
-              Stock {i} placeholder
-            </span>
-          </div>
-        ))}
+    <ScannerProvider
+      onScannerIdChange={() => {}}
+      types={["combo", "simple"]}
+      type={"Watchlist"}
+    >
+      <div className={"h-full flex flex-col"}>
+        <ScannerSelector />
+        <ScannerList className="flex-1" />
       </div>
-    </div>
+    </ScannerProvider>
   );
 }
