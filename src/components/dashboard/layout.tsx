@@ -8,7 +8,13 @@ import { ChevronDown } from "lucide-react";
 
 export function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isTopBarVisible, setIsTopBarVisible] = useState(true);
+  const [isTopBarVisible, setIsTopBarVisible] = useState(
+    localStorage.getItem("TERM:TOP_BAR_VISIBLE") === "true",
+  );
+  const toggleTopBarVisibility = () => {
+    localStorage.setItem("TERM:TOP_BAR_VISIBLE", (!isTopBarVisible).toString());
+    setIsTopBarVisible(!isTopBarVisible);
+  };
 
   return (
     <DashboardProvider>
@@ -21,7 +27,7 @@ export function DashboardLayout() {
         >
           <TopBar
             onLayoutClick={() => setIsSidebarOpen(true)}
-            onToggleTopBar={() => setIsTopBarVisible(false)}
+            onToggleTopBar={toggleTopBarVisibility}
           />
         </div>
 
