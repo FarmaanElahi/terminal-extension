@@ -1,6 +1,7 @@
 import "@/global.css";
 import "@/components/dashboard/dashboard-module.css";
 import "@/components/grid/ag-theme.css";
+import "@/lib/fetch";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/client";
 import { DashboardLayout } from "@/components/dashboard/layout";

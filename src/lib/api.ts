@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryClient, supabase } from "@/lib/client";
 import type { Symbol } from "@/types/symbol";
 import { queryScanner } from "@/lib/scanner";
@@ -19,6 +24,17 @@ import {
   UpdateScanner,
   UpdateScreen,
 } from "@/types/supabase";
+
+import { Param, fetchStockTwit, StockTwitFeed } from "@/lib/stock_twits";
+
+export function useDiscussionFeed(params: Param) {
+  return useInfiniteQuery<StockTwitFeed>({
+    initialPageParam: 0,
+    getNextPageParam: (lastResponse) => lastResponse.cursor.since + 1,
+    queryKey: ["discussion_feed", params],
+    queryFn: async () => fetchStockTwit(params),
+  });
+}
 
 //##################### SYMBOL QUOTE #####################
 async function symbolQuoteQueryFn(ticker: string) {

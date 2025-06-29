@@ -51,4 +51,8 @@ export default defineManifest({
     },
   ],
   host_permissions: ["<all_urls>"],
+  background: {
+    service_worker: "src/background.ts",
+    type: "module",
+  },
 });
