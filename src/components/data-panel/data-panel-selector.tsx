@@ -76,7 +76,7 @@ export function DataPanelSelector() {
             role="combobox"
             size="sm"
             aria-expanded={open}
-            className="w-[200px] justify-between font-bold"
+            className="w-[200px] justify-between "
             onClick={() => {
               if (!activeDataPanel) setOpen(!open);
             }}
@@ -94,7 +94,7 @@ export function DataPanelSelector() {
                 {dataPanels.map((panel) => (
                   <CommandItem
                     key={panel.id}
-                    className="font-bold group relative"
+                    className=" group relative"
                     value={panel.id}
                     onSelect={(currentValue) => {
                       setActiveDataPanelId(
@@ -196,11 +196,7 @@ function DeleteDataPanel({ panel, children }: DeleteDataPanelProps) {
           <AlertDialogTitle>Delete Data Panel</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete
-            <span className="font-bold text-destructive">
-              {" "}
-              {panel.name}
-            </span>{" "}
-            data panel
+            <span className=" text-destructive"> {panel.name}</span> data panel
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

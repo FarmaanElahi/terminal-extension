@@ -1,5 +1,6 @@
-import { Layout, TrendingUp, TrendingDown, EyeOff } from "lucide-react";
+import { EyeOff, Layout, TrendingDown, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useSymbol } from "@/hooks/use-symbol.tsx";
 
 interface TopBarProps {
   onLayoutClick: () => void;
@@ -7,6 +8,7 @@ interface TopBarProps {
 }
 
 export function TopBar({ onLayoutClick, onToggleTopBar }: TopBarProps) {
+  const symbol = useSymbol();
   // Hardcoded market data for now
   const marketData = [
     {
@@ -32,6 +34,14 @@ export function TopBar({ onLayoutClick, onToggleTopBar }: TopBarProps) {
     },
     {
       symbol: "NIFTY IT",
+      price: "41,246.70",
+      change: "+312.45",
+      changePercent: "+0.76%",
+      isPositive: true,
+    },
+
+    {
+      symbol,
       price: "41,246.70",
       change: "+312.45",
       changePercent: "+0.76%",

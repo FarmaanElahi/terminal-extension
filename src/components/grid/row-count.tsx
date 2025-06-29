@@ -19,7 +19,7 @@ export function RowCountStatusBarComponent(props: CustomStatusPanelProps) {
 
   return (
     <div className="ag-status-name-value">
-      <span className="component font-bold">Total&nbsp;</span>
+      <span className="component ">Total&nbsp;</span>
       <span className="ag-status-name-value-value">{count}</span>
     </div>
   );

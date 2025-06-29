@@ -30,7 +30,7 @@ interface RealtimeProviderProps {
 const WS_URL =
   typeof window !== "undefined"
     ? localStorage.getItem("WS_URL") || import.meta.env.VITE_WS_URL
-    : import.meta.env.VITE_WS_UR;
+    : import.meta.env.VITE_WS_URL;
 
 export const realtimeClient = new RealtimeConnection(WS_URL as string);
 

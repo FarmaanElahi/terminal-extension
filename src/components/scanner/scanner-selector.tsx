@@ -77,7 +77,7 @@ export function ScannerSelector() {
             role="combobox"
             size="sm"
             aria-expanded={open}
-            className="w-[200px] justify-between font-bold"
+            className="w-[200px] justify-between "
             onClick={() => {
               if (!activeScanner) setOpen(!open);
             }}
@@ -95,7 +95,7 @@ export function ScannerSelector() {
                 {scanners.map((scanner) => (
                   <CommandItem
                     key={scanner.id}
-                    className="font-bold group relative"
+                    className=" group relative"
                     value={scanner.id}
                     onSelect={(currentValue) => {
                       setScannerId(
@@ -592,11 +592,7 @@ function DeleteScanner({
           <AlertDialogTitle>Delete {type}</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete
-            <span className="font-bold text-destructive">
-              {" "}
-              {scanner.name}
-            </span>{" "}
-            watchlist
+            <span className=" text-destructive"> {scanner.name}</span> watchlist
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

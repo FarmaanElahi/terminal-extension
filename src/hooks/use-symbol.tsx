@@ -4,7 +4,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useState,
 } from "react";
 import type { ResolvedSymbol } from "@/types/tradingview";
@@ -35,33 +34,35 @@ export function SymbolProvider({ children }: { children?: ReactNode }) {
     } catch (e) {}
   }, []);
 
-  const changeSymbol = useCallback((symbol: string) => {
-    try {
-      TradingViewApi.changeSymbol(
-        symbol,
-        TradingViewApi.getSymbolInterval().interval,
-      );
-    } catch (e) {
-      setSymbol(symbol);
-    }
-  }, []);
-
-  const value = useMemo(
-    () => ({ symbol, changeSymbol }),
-    [symbol, changeSymbol],
+  const changeSymbol = useCallback(
+    (symbol: string) => {
+      console.log("Symbol changed", symbol);
+      try {
+        TradingViewApi.changeSymbol(
+          symbol,
+          TradingViewApi.getSymbolInterval().interval,
+        );
+      } catch (e) {
+        setSymbol(symbol);
+      }
+    },
+    [setSymbol],
   );
+
+  console.log("Current symbol", symbol);
+
   return (
-    <SymbolContext.Provider value={value}>{children}</SymbolContext.Provider>
+    <SymbolContext.Provider value={{ symbol, changeSymbol }}>
+      {children}
+    </SymbolContext.Provider>
   );
 }
 
 export function useSymbol() {
-  return useContext(SymbolContext)!.symbol || "NSE:RELIANCE";
+  return useContext(SymbolContext)?.symbol ?? "NSE:RELIANCE";
 }
 
 export function useSymbolSwitcher() {
   const { changeSymbol } = useContext(SymbolContext)!;
-  return (prop: { symbol: string; state?: unknown }) => {
-    changeSymbol(prop.symbol);
-  };
+  return changeSymbol;
 }

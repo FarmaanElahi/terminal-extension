@@ -1,13 +1,13 @@
 .ag-terminal-theme {
-    --ag-background-color: hsl(var(--background));
-    --ag-foreground-color: hsl(var(--foreground));
-    --ag-header-background-color: hsl(var(--background));
-    --ag-header-text-color: hsl(var(--foreground));
+    --ag-background-color: var(--background);
+    --ag-foreground-color: var(--foreground);
+    --ag-header-background-color: var(--background);
+    --ag-header-text-color: var(--foreground);
     --ag-font-size: 14px;
     /*noinspection CssUnresolvedCustomProperty*/
-    --ag-font-family: var(--font-quicksand-sans);
-    --ag-row-hover-color: hsl(var(--muted));
-    --ag-selected-row-background-color: hsl(var(--secondary));
+    --ag-font-family: var(--default-font-family);
+    --ag-row-hover-color: var(--muted);
+    --ag-selected-row-background-color: var(--secondary);
 
     /* Example additional custom styling for headers */
     --ag-header-height: 40px;
@@ -30,7 +30,7 @@
 }
 
 .ag-terminal-theme .ag-header {
-    /*@apply w-full flex items-center p-0 justify-between text-xs font-bold text-muted-foreground rounded-t-md bg-muted/60 hover:bg-muted transition-colors*/
+    /*@apply w-full flex items-center p-0 justify-between text-xs  text-muted-foreground rounded-t-md bg-muted/60 hover:bg-muted transition-colors*/
 }
 
 .ag-terminal-theme .ag-header-cell-menu-button {

@@ -19,7 +19,6 @@ import {
   extendedColumnType,
 } from "@/components/symbols/columns";
 import { AgGridReact } from "ag-grid-react";
-import "../grid/ag-theme.css";
 import debounce from "debounce";
 import { toast } from "sonner";
 import { Json } from "@/types/generated/supabase";
