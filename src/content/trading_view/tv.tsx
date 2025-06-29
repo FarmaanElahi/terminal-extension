@@ -3,6 +3,33 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 
 function tradingViewInit(app: ReactNode) {
+  let invisibleRoot: any = null;
+  let visibleRoot: any = null;
+  let appContainer: HTMLDivElement | null = null;
+
+  // Create invisible container and render React app
+  const createInvisibleApp = () => {
+    // Create invisible container
+    const invisibleContainer = document.createElement("div");
+    invisibleContainer.id = "tv-extension-invisible-container";
+    invisibleContainer.style.position = "absolute";
+    invisibleContainer.style.left = "-9999px";
+    invisibleContainer.style.top = "-9999px";
+    invisibleContainer.style.width = "100%";
+    invisibleContainer.style.height = "100%";
+    invisibleContainer.style.visibility = "hidden";
+    invisibleContainer.style.pointerEvents = "none";
+
+    // Append to body
+    document.body.appendChild(invisibleContainer);
+
+    // Render React app in invisible container
+    invisibleRoot = createRoot(invisibleContainer);
+    invisibleRoot.render(app);
+
+    return invisibleContainer;
+  };
+
   // Inject our button next to the Chats button
   const injectButton = () => {
     // Find the Chats button
@@ -50,8 +77,8 @@ function tradingViewInit(app: ReactNode) {
       chatsButton.nextSibling,
     );
 
-    // Function to inject React app into chart page grid area
-    const injectReactApp = () => {
+    // Function to move React app from invisible to visible container
+    const moveReactAppToVisible = () => {
       // Find the chart page grid area div
       const chartPageGridArea = document.querySelectorAll(
         'div[data-qa-id="chart-page-grid-area"]',
@@ -62,24 +89,45 @@ function tradingViewInit(app: ReactNode) {
         return;
       }
 
-      // Clear the existing content and inject our React app
+      // Clear the existing content
       chartPageGridArea.innerHTML = "";
 
       // Create a container for our React app
-      const appContainer = document.createElement("div");
+      appContainer = document.createElement("div");
       appContainer.id = "tv-extension-app-container";
       appContainer.style.width = "100%";
       appContainer.style.height = "100%";
 
       chartPageGridArea.appendChild(appContainer);
 
-      // Render React app in the container
-      createRoot(appContainer).render(app);
+      // Unmount from invisible container
+      if (invisibleRoot) {
+        invisibleRoot.unmount();
+        invisibleRoot = null;
+      }
+
+      // Remove invisible container
+      const invisibleContainer = document.getElementById(
+        "tv-extension-invisible-container",
+      );
+      if (invisibleContainer) {
+        invisibleContainer.remove();
+      }
+
+      // Render React app in the visible container
+      visibleRoot = createRoot(appContainer);
+      visibleRoot.render(app);
+
+      // Update button state
+      extensionButton.setAttribute("aria-pressed", "true");
     };
 
-    // Add click handler to inject React app
-    extensionButton.addEventListener("click", injectReactApp);
+    // Add click handler to move React app to visible
+    extensionButton.addEventListener("click", moveReactAppToVisible);
   };
+
+  // Initialize invisible app first
+  createInvisibleApp();
 
   // Inject the button
   injectButton();
@@ -103,8 +151,20 @@ function tradingViewInit(app: ReactNode) {
     const button = document.getElementById("tv-extension-toggle-button");
     if (button) button.remove();
 
-    const appContainer = document.getElementById("tv-extension-app-container");
+    const invisibleContainer = document.getElementById(
+      "tv-extension-invisible-container",
+    );
+    if (invisibleContainer) invisibleContainer.remove();
+
     if (appContainer) appContainer.remove();
+
+    // Unmount React roots
+    if (invisibleRoot) {
+      invisibleRoot.unmount();
+    }
+    if (visibleRoot) {
+      visibleRoot.unmount();
+    }
   };
 }
 

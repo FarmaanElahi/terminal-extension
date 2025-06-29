@@ -25,7 +25,7 @@ import {
   UpdateScreen,
 } from "@/types/supabase";
 
-import { Param, fetchStockTwit, StockTwitFeed } from "@/lib/stock_twits";
+import { fetchStockTwit, Param, StockTwitFeed } from "@/lib/stock_twits";
 
 export function useDiscussionFeed(params: Param) {
   return useInfiniteQuery<StockTwitFeed>({
@@ -681,16 +681,57 @@ export function useDataPanelData(id: string) {
 
 //##################### ALERTS #####################
 
+export async function queryAlerts() {
+  return supabase
+    .from("alerts")
+    .select("*")
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
+}
+
+export async function createAlert(alert: InsertAlert) {
+  return supabase
+    .from("alerts")
+    .insert({
+      ...alert,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      is_active: true,
+      triggered_count: 0,
+    })
+    .select()
+    .single();
+}
+
+export async function updateAlert(id: string, payload: UpdateAlert) {
+  return supabase
+    .from("alerts")
+    .update({
+      ...payload,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select()
+    .single();
+}
+
+export async function deleteAlert(id: string) {
+  return supabase
+    .from("alerts")
+    .update({
+      deleted_at: new Date().toISOString(),
+      is_active: false,
+    })
+    .eq("id", id)
+    .select()
+    .single();
+}
+
 export function useAlerts() {
   return useQuery({
     queryKey: ["alerts"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("alerts")
-        .select("*")
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false });
-
+      const { data, error } = await queryAlerts();
       if (error) throw error;
       return data as Alert[];
     },
@@ -744,18 +785,7 @@ export function useCreateAlert(onComplete?: (alert: Alert) => void) {
       onComplete?.(alert);
     },
     mutationFn: async (alert: InsertAlert) => {
-      const { data, error } = await supabase
-        .from("alerts")
-        .insert({
-          ...alert,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          is_active: true,
-          triggered_count: 0,
-        })
-        .select()
-        .single();
-
+      const { data, error } = await createAlert(alert);
       if (error) throw error;
       return data as Alert;
     },
@@ -780,15 +810,7 @@ export function useUpdateAlert(onComplete?: (alert: Alert) => void) {
       id: string;
       payload: UpdateAlert;
     }) => {
-      const { data, error } = await supabase
-        .from("alerts")
-        .update({
-          ...payload,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id)
-        .select()
-        .single();
+      const { data, error } = await updateAlert(id, payload);
 
       if (error) throw error;
       return data as Alert;
@@ -809,15 +831,7 @@ export function useDeleteAlert(onComplete?: () => void) {
     },
     mutationFn: async (id: string) => {
       // Soft delete by setting deleted_at
-      const { data, error } = await supabase
-        .from("alerts")
-        .update({
-          deleted_at: new Date().toISOString(),
-          is_active: false,
-        })
-        .eq("id", id)
-        .select()
-        .single();
+      const { data, error } = await deleteAlert(id);
 
       if (error) throw error;
       return data as Alert;
