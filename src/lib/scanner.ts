@@ -1,11 +1,8 @@
+import { API_BASE_URL } from "@/lib/client.ts";
+
 const TABLES = {
   symbols: "symbols",
 };
-
-const API_BASE_URL =
-  typeof window !== "undefined"
-    ? localStorage.getItem("BASE_API_URL") || import.meta.env.VITE_API_URL
-    : process.env.VITE_API_URL;
 
 interface QueryProps {
   columns?: (string | { column: string; distinct?: boolean; alias?: string })[];

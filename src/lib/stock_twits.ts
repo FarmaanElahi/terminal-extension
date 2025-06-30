@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "@/lib/client.ts";
+
 export interface StockTwitFeed {
   symbol: Symbol;
   cursor: Cursor;
@@ -222,7 +224,7 @@ function toRequestParam(params: Param) {
   if (params.feed === "symbol") {
     const { symbol, filter: feed } = params;
     return {
-      url: `${import.meta.env.VITE_API_URL}/ideas/${symbol}/${feed}`,
+      url: `${API_BASE_URL}/ideas/${symbol}/${feed}`,
       q: {
         limit: String(params.limit),
       },
@@ -230,7 +232,7 @@ function toRequestParam(params: Param) {
   }
 
   return {
-    url: `${import.meta.env.VITE_API_URL}/ideas/global/${params.feed}`,
+    url: `${API_BASE_URL}/ideas/global/${params.feed}`,
     q: {
       limit: String(params.limit),
     },
