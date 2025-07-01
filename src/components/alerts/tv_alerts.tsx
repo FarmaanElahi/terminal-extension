@@ -33,9 +33,6 @@ export function TradingViewAlerts() {
   const orderLineReferencesRef = useRef<OrderLineReference[]>([]);
   const isInitializedRef = useRef(false);
 
-  // Track crosshair position without causing re-renders
-  const crosshairPriceRef = useRef<number | null>(null);
-
   // Alert builder state
   const [alertBuilderOpen, setAlertBuilderOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | undefined>();
@@ -57,9 +54,6 @@ export function TradingViewAlerts() {
         // Setup symbol change listener
         setupSymbolChangeListener();
 
-        // Setup crosshair tracking
-        const unsubCrossHair = setupCrosshairListener();
-
         // Setup keyboard shortcuts
         const unsubKeyboardShortcuts = setupKeyboardShortcuts();
 
@@ -67,7 +61,6 @@ export function TradingViewAlerts() {
 
         console.log("📊 TradingView Alerts component initialized");
         return () => {
-          unsubCrossHair?.();
           unsubKeyboardShortcuts?.();
         };
       } catch (error) {
@@ -77,21 +70,6 @@ export function TradingViewAlerts() {
 
     void initializeTradingView();
   }, [currentSymbol]);
-
-  /**
-   * Setup crosshair movement listener to track current price
-   */
-  const setupCrosshairListener = () => {
-    try {
-      const chart = TradingViewApi.chart();
-      const cb = (p: { price: number; time: number }) =>
-        (crosshairPriceRef.current = Number(p.price.toFixed(2)));
-      chart.crossHairMoved().subscribe("alert-crosshair", cb);
-      return () => chart.crossHairMoved().unsubscribe(cb);
-    } catch (error) {
-      console.error("Failed to setup crosshair listener:", error);
-    }
-  };
 
   /**
    * Setup keyboard shortcuts for alert creation
@@ -130,7 +108,7 @@ export function TradingViewAlerts() {
       type: "constant",
       symbol: currentSymbol,
       params: {
-        constant: crosshairPriceRef?.current ?? 0, // Use crosshair price or fallback to 0
+        constant: 0,
       },
     };
 
@@ -153,9 +131,6 @@ export function TradingViewAlerts() {
         if (newSymbol && newSymbol !== currentSymbol && currentSymbol) {
           console.log(`🔄 Symbol changed: ${currentSymbol} → ${newSymbol}`);
           removeOrderLinesForSymbol(currentSymbol);
-
-          // Reset crosshair price when symbol changes
-          crosshairPriceRef.current = null;
         }
       };
 
@@ -197,7 +172,6 @@ export function TradingViewAlerts() {
     return () => {
       removeAllOrderLines();
       isInitializedRef.current = false;
-      crosshairPriceRef.current = null;
     };
   }, []);
 
