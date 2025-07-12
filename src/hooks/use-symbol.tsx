@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import type { ResolvedSymbol } from "@/types/tradingview";
+import { sendMessageToCurrentTab } from "@/lib/chrome.ts";
 
 const SymbolContext = createContext<
   | {
@@ -36,15 +37,12 @@ export function SymbolProvider({ children }: { children?: ReactNode }) {
 
   const changeSymbol = useCallback(
     (symbol: string) => {
-      console.log("Symbol changed", symbol);
-      try {
-        TradingViewApi.changeSymbol(
-          symbol,
-          TradingViewApi.getSymbolInterval().interval,
-        );
-      } catch (e) {
-        setSymbol(symbol);
-      }
+      sendMessageToCurrentTab({
+        app: "terminal",
+        source: "side-panel",
+        type: "changeSymbol",
+        payload: { symbol },
+      });
     },
     [setSymbol],
   );

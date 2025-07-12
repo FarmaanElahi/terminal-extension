@@ -3,14 +3,10 @@
  * This script is responsible for controlling the Tradingview charts.
  * Request will come from other isolated script or the background scrip
  */
-
-interface ChangeSymbolEvent {
-  source: "terminal";
-  type: "changeSymbol";
-  payload: { symbol: string };
-}
-
-type BaseEvent = ChangeSymbolEvent;
+import type {
+  ChangeSymbolEvent,
+  BaseEvent,
+} from "@/content/trading_view/type.ts";
 
 function pushSymbolChangedEvent() {
   const symbolChanged = TradingViewApi.chart().onSymbolChanged();
@@ -35,12 +31,13 @@ function changeSymbol(ev: ChangeSymbolEvent) {
   TradingViewApi.changeSymbol(ev.payload.symbol, interval);
 }
 
-function subscribeToContentScript() {
+function subscribeToSidePanel() {
   const cb = (event: MessageEvent<BaseEvent>) => {
     if (
       event.source !== window ||
       !event.data ||
-      event.data.source !== "terminal"
+      event.data.app !== "terminal" ||
+      event.data.source !== "side-panel"
     ) {
       return;
     }
@@ -60,7 +57,7 @@ function unsubAll(...cbs: Array<Function>) {
 }
 
 function main() {
-  const unsubFromContentScript = subscribeToContentScript();
+  const unsubFromContentScript = subscribeToSidePanel();
   const unSubPushSymbolChangeEvent = pushSymbolChangedEvent();
 
   unsubAll(unsubFromContentScript, unSubPushSymbolChangeEvent);

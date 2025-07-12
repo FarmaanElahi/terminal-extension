@@ -3,7 +3,7 @@ import pkg from "./package.json";
 
 export default defineManifest({
   manifest_version: 3,
-  name: pkg.name,
+  name: "Terminal",
   version: pkg.version,
   icons: {
     48: "public/logo.png",
@@ -15,11 +15,10 @@ export default defineManifest({
     default_title: "Open Panel",
   },
   content_scripts: [
-    // {
-    //   js: ["src/content/trading_view/tv_content.ts"],
-    //   matches: ["https://in.tradingview.com/*"],
-    //   run_at: "document_start",
-    // },
+    {
+      js: ["src/content/trading_view/tv_content.ts"],
+      matches: ["https://in.tradingview.com/*"],
+    },
     {
       // @ts-ignore
       world: "MAIN",
