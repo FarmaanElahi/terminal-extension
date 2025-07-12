@@ -4,19 +4,23 @@
  * Request will come from other isolated script or the background scrip
  */
 import type {
-  ChangeSymbolEvent,
   BaseEvent,
+  ChangeSymbolEvent,
+  SymbolChangedEvent,
 } from "@/content/trading_view/type.ts";
+import type { ResolvedSymbol } from "@/types/tradingview";
 
 function pushSymbolChangedEvent() {
   const symbolChanged = TradingViewApi.chart().onSymbolChanged();
-  const onSymbolChanged = (r: unknown) => {
+  const onSymbolChanged = (r: ResolvedSymbol) => {
+    if (r.pro_name?.includes("+")) return;
+
     window.postMessage(
       {
-        source: "page",
         type: "symbolChanged",
-        payload: r,
-      },
+        payload: { symbol: r.pro_name },
+        destination: "side-panel",
+      } satisfies SymbolChangedEvent,
       "*",
     );
   };
@@ -36,8 +40,7 @@ function subscribeToSidePanel() {
     if (
       event.source !== window ||
       !event.data ||
-      event.data.app !== "terminal" ||
-      event.data.source !== "side-panel"
+      event.data.destination !== "page"
     ) {
       return;
     }

@@ -1,16 +1,15 @@
+// Events sent from the page
+export interface SymbolChangedEvent {
+  type: "symbolChanged";
+  payload: { symbol: string };
+  destination: "page" | "content" | "background" | "side-panel";
+}
+
+// Event sent from the side panel
 export interface ChangeSymbolEvent {
-  app: "terminal";
-  source: "content" | "side-panel";
   type: "changeSymbol";
   payload: { symbol: string };
+  destination: "page" | "content" | "background";
 }
 
-export interface RelayEvent {
-  app: "terminal";
-  source: "side-panel";
-  type: "relay";
-  destination: "page";
-  payload: unknown;
-}
-
-export type BaseEvent = ChangeSymbolEvent;
+export type BaseEvent = ChangeSymbolEvent | SymbolChangedEvent;

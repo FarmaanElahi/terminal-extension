@@ -1,3 +1,5 @@
+import { BaseEvent } from "@/content/trading_view/type.ts";
+
 const TRADINGVIEW_SIDE_PANEL_URL = "https://in.tradingview.com";
 
 // Allows users to open the side panel by clicking on the action toolbar icon
@@ -21,5 +23,25 @@ chrome.tabs.onUpdated.addListener(async (tabId, _, tab) => {
       tabId,
       enabled: false,
     });
+  }
+});
+
+let sidePanelPort: chrome.runtime.Port | null = null;
+
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name === "sidepanel") {
+    sidePanelPort = port;
+    console.log("Side panel connected.");
+
+    port.onDisconnect.addListener(() => {
+      sidePanelPort = null;
+      console.log("Side panel disconnected.");
+    });
+  }
+});
+
+chrome.runtime.onMessage.addListener((message: BaseEvent) => {
+  if (message.destination === "side-panel" && sidePanelPort) {
+    sidePanelPort.postMessage(message);
   }
 });
