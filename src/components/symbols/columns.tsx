@@ -3130,6 +3130,12 @@ export const defaultColumns: Array<ColDef<Symbol>> = [
     cellDataType: "number",
   },
   {
+    field: "ms_rs_rating",
+    headerName: "RS Rating",
+    context: { category: "Ratings" },
+    cellDataType: "number",
+  },
+  {
     field: "RS_Rating_1D",
     headerName: "RS Rating 1D",
     context: { category: "Ratings" },
