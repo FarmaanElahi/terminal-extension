@@ -195,6 +195,10 @@ interface IOrderLine {
 }
 
 export declare global {
+  interface Window {
+    TradingViewApi: TradingViewApi;
+  }
+
   const TradingViewApi: {
     getSymbolInterval: () => { symbol: string; interval: string };
     changeSymbol: (symbol: string, interval: string) => void;

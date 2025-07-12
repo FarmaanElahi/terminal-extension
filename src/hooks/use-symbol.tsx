@@ -6,7 +6,8 @@ import {
   useEffect,
   useState,
 } from "react";
-import type { ResolvedSymbol } from "@/types/tradingview";
+import { sendMessageToCurrentTab } from "@/lib/chrome.ts";
+import { BaseEvent } from "@/content/trading_view/type.ts";
 
 const SymbolContext = createContext<
   | {
@@ -17,34 +18,27 @@ const SymbolContext = createContext<
 >(undefined);
 
 export function SymbolProvider({ children }: { children?: ReactNode }) {
-  const [symbol, setSymbol] = useState(() => {
-    try {
-      return TradingViewApi.getSymbolInterval().symbol;
-    } catch (e) {
-      return "NSE:NIFTY";
-    }
-  });
+  const [symbol, setSymbol] = useState(() => "NSE:RELIANCE");
   useEffect(() => {
     try {
-      const subscription = TradingViewApi.chart().onSymbolChanged();
-      const cb = (p: ResolvedSymbol) => setSymbol(p.pro_name as string);
-      setSymbol(TradingViewApi.getSymbolInterval().symbol);
-      subscription.subscribe("sds", cb);
-      return () => subscription.unsubscribe(cb);
+      const cb = (ev: BaseEvent) => {
+        if (ev.destination !== "side-panel") return;
+        if (ev.type === "symbolChanged") {
+          setSymbol(ev.payload.symbol);
+        }
+      };
+      chrome.runtime.onMessage.addListener(cb);
+      return () => chrome.runtime.onMessage.removeListener(cb);
     } catch (e) {}
   }, []);
 
   const changeSymbol = useCallback(
     (symbol: string) => {
-      console.log("Symbol changed", symbol);
-      try {
-        TradingViewApi.changeSymbol(
-          symbol,
-          TradingViewApi.getSymbolInterval().interval,
-        );
-      } catch (e) {
-        setSymbol(symbol);
-      }
+      sendMessageToCurrentTab({
+        type: "changeSymbol",
+        payload: { symbol },
+        destination: "page",
+      });
     },
     [setSymbol],
   );
