@@ -2076,14 +2076,32 @@ export const defaultColumns: Array<ColDef<Symbol>> = [
   // ##########################  Technical  ##########################
 
   {
-    field: "c_by_min_c_30",
+    field: "c/minc30",
     headerName: "Close / Min Close (30)",
     cellDataType: "number" satisfies CellDataType,
     context: { category: "Technicals" },
   },
   {
-    field: "avgc7_by_avgc65",
+    field: "avgc7/avgc65",
     headerName: "Avg Close(7) / Avg Close (65)",
+    cellDataType: "number" satisfies CellDataType,
+    context: { category: "Technicals" },
+  },
+  {
+    field: "c/avgc126",
+    headerName: "Close / Avg Close (126)",
+    cellDataType: "number" satisfies CellDataType,
+    context: { category: "Technicals" },
+  },
+  {
+    field: "c25/avgc126.25",
+    headerName: "Close / Avg Close (126) 25D Ago",
+    cellDataType: "number" satisfies CellDataType,
+    context: { category: "Technicals" },
+  },
+  {
+    field: "c50/avgc126.50",
+    headerName: "Close / Avg Close (126) 50D Ago",
     cellDataType: "number" satisfies CellDataType,
     context: { category: "Technicals" },
   },
