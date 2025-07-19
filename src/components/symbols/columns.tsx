@@ -2076,8 +2076,26 @@ export const defaultColumns: Array<ColDef<Symbol>> = [
   // ##########################  Technical  ##########################
 
   {
-    field: "c/minc30",
+    field: "c/minc5",
+    headerName: "M5",
+    cellDataType: "number" satisfies CellDataType,
+    context: { category: "Technicals" },
+  },
+  {
+    field: "c/minc10",
+    headerName: "M10",
+    cellDataType: "number" satisfies CellDataType,
+    context: { category: "Technicals" },
+  },
+  {
+    field: "c/minc20",
     headerName: "M20",
+    cellDataType: "number" satisfies CellDataType,
+    context: { category: "Technicals" },
+  },
+  {
+    field: "c/minc30",
+    headerName: "M30",
     cellDataType: "number" satisfies CellDataType,
     context: { category: "Technicals" },
   },
