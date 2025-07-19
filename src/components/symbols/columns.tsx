@@ -2106,6 +2106,36 @@ export const defaultColumns: Array<ColDef<Symbol>> = [
     context: { category: "Technicals" },
   },
   {
+    field: "buyout_10",
+    headerName: "Buyout in 10 Day",
+    cellDataType: "number" satisfies CellDataType,
+    context: { category: "Technicals" },
+  },
+  {
+    field: "buyout_20",
+    headerName: "Buyout in 20 Day",
+    cellDataType: "number" satisfies CellDataType,
+    context: { category: "Technicals" },
+  },
+  {
+    field: "buyout_30",
+    headerName: "Buyout in 30 Day",
+    cellDataType: "number" satisfies CellDataType,
+    context: { category: "Technicals" },
+  },
+  {
+    field: "buyout_50",
+    headerName: "Buyout in 50 Day",
+    cellDataType: "number" satisfies CellDataType,
+    context: { category: "Technicals" },
+  },
+  {
+    field: "buyout_100",
+    headerName: "Buyout in 100 Day",
+    cellDataType: "number" satisfies CellDataType,
+    context: { category: "Technicals" },
+  },
+  {
     field: "price_sma_10W",
     headerName: "SMA 10W",
     cellDataType: "price" satisfies CellDataType,
