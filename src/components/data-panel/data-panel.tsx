@@ -335,15 +335,35 @@ function ColumnItem({
       }
     }
 
-    // Handle data type formatting based on cellDataType
-    if (column.cellDataType && typeof column.cellDataType === "string") {
-      const dataType = column.cellDataType as string;
-      const formatter =
-        extendedColumnType[dataType as keyof typeof extendedColumnType];
+    try {
+      // Handle data type formatting based on cellDataType
+      if (column.cellDataType && typeof column.cellDataType === "string") {
+        const dataType = column.cellDataType as string;
+        const formatter =
+          extendedColumnType[dataType as keyof typeof extendedColumnType];
 
-      if (formatter && formatter.valueFormatter) {
+        if (formatter && formatter.valueFormatter) {
+          /* eslint-disable @typescript-eslint/no-explicit-any */
+          return formatter.valueFormatter({
+            value,
+            data: symbolData,
+            colDef: column,
+            api: null,
+            column: null,
+            columnApi: null,
+            context: null,
+            node: null,
+          } as any) as string;
+        }
+      }
+
+      // Use valueFormatter if available
+      if (
+        column.valueFormatter &&
+        typeof column.valueFormatter === "function"
+      ) {
         /* eslint-disable @typescript-eslint/no-explicit-any */
-        return formatter.valueFormatter({
+        return column.valueFormatter({
           value,
           data: symbolData,
           colDef: column,
@@ -354,36 +374,40 @@ function ColumnItem({
           node: null,
         } as any) as string;
       }
-    }
 
-    // Use valueFormatter if available
-    if (column.valueFormatter && typeof column.valueFormatter === "function") {
-      /* eslint-disable @typescript-eslint/no-explicit-any */
-      return column.valueFormatter({
-        value,
-        data: symbolData,
-        colDef: column,
-        api: null,
-        column: null,
-        columnApi: null,
-        context: null,
-        node: null,
-      } as any) as string;
-    }
-
-    if (typeof value === "number") {
-      return (
-        (extendedColumnType["number"]?.valueFormatter?.({
-          value,
-          data: symbolData,
-          colDef: column,
-          api: null,
-          column: null,
-          columnApi: null,
-          context: null,
-          node: null,
-        } as any) as string) ?? "-"
-      );
+      if (typeof value === "number") {
+        if (isRatingColumn) {
+          return [
+            symbolData[rankingCategory as keyof Symbol] ?? "",
+            (extendedColumnType["number"]?.valueFormatter?.({
+              value,
+              data: symbolData,
+              colDef: column,
+              api: null,
+              column: null,
+              columnApi: null,
+              context: null,
+              node: null,
+            } as any) as string) ?? "-",
+          ]
+            .filter((r) => r)
+            .join(" | ");
+        }
+        return (
+          (extendedColumnType["number"]?.valueFormatter?.({
+            value,
+            data: symbolData,
+            colDef: column,
+            api: null,
+            column: null,
+            columnApi: null,
+            context: null,
+            node: null,
+          } as any) as string) ?? "-"
+        );
+      }
+    } catch (e) {
+      return "-";
     }
 
     // Default display

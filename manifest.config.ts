@@ -20,6 +20,10 @@ export default defineManifest({
       matches: ["https://in.tradingview.com/*"],
     },
     {
+      js: ["src/content/market_smith/ms_main.ts"],
+      matches: ["https://marketsmithindia.com/*"],
+    },
+    {
       // @ts-ignore
       world: "MAIN",
       js: ["src/content/trading_view/tv_main.ts"],
@@ -35,15 +39,6 @@ export default defineManifest({
     "declarativeNetRequest",
     "declarativeNetRequestFeedback",
   ],
-  declarative_net_request: {
-    rule_resources: [
-      {
-        id: "proxy_rules",
-        enabled: true,
-        path: "rules.json",
-      },
-    ],
-  },
   web_accessible_resources: [
     {
       resources: ["*.js", "*.css", "*.svg"],

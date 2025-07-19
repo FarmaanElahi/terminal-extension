@@ -150,12 +150,6 @@ export const defaultColumns: Array<ColDef<Symbol>> = [
     cellDataType: "text",
   },
   {
-    field: "ipo",
-    headerName: "IPO",
-    context: { category: "General" },
-    cellDataType: "dateTime",
-  },
-  {
     field: "days_since_ipo",
     headerName: "IPO Days",
     context: { category: "General" },

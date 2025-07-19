@@ -1,4 +1,5 @@
 import { BaseEvent } from "@/content/trading_view/type.ts";
+import { sendMessageToUrl } from "@/lib/chrome.ts";
 
 const TRADINGVIEW_SIDE_PANEL_URL = "https://in.tradingview.com";
 
@@ -43,5 +44,15 @@ chrome.runtime.onConnect.addListener((port) => {
 chrome.runtime.onMessage.addListener((message: BaseEvent) => {
   if (message.destination === "side-panel" && sidePanelPort) {
     sidePanelPort.postMessage(message);
+  }
+
+  // Notify relevant tab when the symbol is changed from tradingview
+  if (message.type === "symbolChanged") {
+    // Send to market smith
+    sendMessageToUrl(["https://marketsmithindia.com/"], {
+      type: "symbolChanged",
+      payload: { symbol: message.payload.symbol },
+      destination: "page",
+    });
   }
 });
