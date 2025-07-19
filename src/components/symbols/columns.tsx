@@ -2094,13 +2094,13 @@ export const defaultColumns: Array<ColDef<Symbol>> = [
     context: { category: "Technicals" },
   },
   {
-    field: "c25/avgc126_25D_ago",
+    field: "c25/avgc126__25",
     headerName: "Close / Avg Close (126) 25D Ago",
     cellDataType: "number" satisfies CellDataType,
     context: { category: "Technicals" },
   },
   {
-    field: "c50/avgc126_50D_ago",
+    field: "c50/avgc126__50",
     headerName: "Close / Avg Close (126) 50D Ago",
     cellDataType: "number" satisfies CellDataType,
     context: { category: "Technicals" },
