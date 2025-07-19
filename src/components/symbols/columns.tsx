@@ -2077,7 +2077,7 @@ export const defaultColumns: Array<ColDef<Symbol>> = [
 
   {
     field: "c/minc30",
-    headerName: "Close / Min Close (30)",
+    headerName: "M20",
     cellDataType: "number" satisfies CellDataType,
     context: { category: "Technicals" },
   },
