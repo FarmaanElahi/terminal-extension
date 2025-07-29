@@ -3432,6 +3432,12 @@ export const defaultColumns: Array<ColDef<Symbol>> = [
     context: { category: "Ratings" },
     cellDataType: "number",
   },
+  {
+    field: "ms_eps_rank",
+    headerName: "EPS Rank",
+    context: { category: "Ratings" },
+    cellDataType: "number",
+  },
   // ##########################  Ratings  ##########################
 ].map((c) => ({ ...c, colId: c.field as keyof Symbol }) as ColDef<Symbol>);
 
