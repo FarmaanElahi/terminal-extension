@@ -107,3 +107,19 @@ export async function runRawSymbolCount(filterSql: string) {
     return 0;
   }
 }
+
+interface ScanResult {
+  count: number;
+  columns: string[];
+  data: Array<Array<unknown>>;
+  success: boolean;
+}
+
+export async function runListScan(prop: unknown) {
+  console.log(JSON.stringify(prop));
+  return await fetch(`http://localhost:8000/v2/scan`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(prop),
+  }).then((r) => r.json() as Promise<ScanResult>);
+}

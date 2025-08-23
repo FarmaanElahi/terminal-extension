@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { queryClient, supabase } from "@/lib/client";
 import type { Symbol } from "@/types/symbol";
-import { queryScanner } from "@/lib/scanner";
+import { queryScanner, runListScan } from "@/lib/scanner";
 import {
   Alert,
   Dashboard,
@@ -900,5 +900,12 @@ export function useGroupRanks(props: GroupRankProps) {
         };
       });
     },
+  });
+}
+
+export function useListScan(props: unknown) {
+  return useQuery({
+    queryKey: [JSON.stringify(props)],
+    queryFn: async () => runListScan(props),
   });
 }
