@@ -3,7 +3,12 @@ import { useListScan } from "@/lib/api.ts";
 import { AgGridReact } from "ag-grid-react";
 import { useCallback, useMemo, useState } from "react";
 import { defaultColumns } from "@/components/symbols/columns.tsx";
-import { ColDef, GetRowIdFunc } from "ag-grid-community";
+import {
+  AgColumn,
+  CellFocusedEvent,
+  ColDef,
+  GetRowIdFunc,
+} from "ag-grid-community";
 import {
   Dialog,
   DialogContent,
@@ -22,11 +27,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Edit, Filter, Plus, Settings, Trash2, X } from "lucide-react";
+import { Edit, Filter, Plus, Settings, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { useSymbolSwitcher } from "@/hooks/use-symbol.tsx";
 
-export function ListApp(_props: WidgetProps) {
+export function EZScanApp(_props: WidgetProps) {
   const [state, setState] = useState({
     conditions: [] as FilterCondition[],
     columns: [
@@ -45,10 +52,22 @@ export function ListApp(_props: WidgetProps) {
         property_name: "logo",
       },
       {
+        id: "price",
+        name: "Price",
+        type: "computed",
+        expression: "c",
+      },
+      {
         id: "change",
         name: "Change%",
         type: "computed",
-        expression: "(c/prv(c)) * 100",
+        expression: "(c/prv(c) -1 ) * 100",
+      },
+      {
+        id: "net_change",
+        name: "Net Change",
+        type: "computed",
+        expression: "c - prv(c)",
       },
     ] as ColumnConfig[],
     logic: "and" as "and" | "or",
@@ -61,6 +80,27 @@ export function ListApp(_props: WidgetProps) {
   });
 
   const { data } = useListScan(state);
+
+  const switcher = useSymbolSwitcher();
+  const onCellFocused = useCallback(
+    (event: CellFocusedEvent) => {
+      // If the cell was focus because of selection change, we will ignore
+      // switching the symbol
+      if ((event.column as AgColumn)?.colId === "ag-Grid-SelectionColumn") {
+        return;
+      }
+
+      const { rowIndex } = event;
+      if (rowIndex === undefined || rowIndex === null) return;
+      const symbol = event.api.getDisplayedRowAtIndex(rowIndex)?.data;
+      if (!symbol) return;
+      if (!symbol) return;
+      const { ticker } = symbol;
+      if (!ticker) return;
+      switcher(ticker);
+    },
+    [switcher],
+  );
 
   const rows = useMemo(
     () =>
@@ -76,8 +116,26 @@ export function ListApp(_props: WidgetProps) {
   const ignoreColumnsProperty = useMemo(() => new Set(["logo"]), []);
 
   const columns = useMemo(
-    () =>
-      state.columns
+    () => [
+      {
+        colId: "ticker",
+        field: "ticker",
+        hide: true,
+        mainMenuItems: [
+          {
+            name: "Copy Ticker",
+            action: (params) => {
+              const columnData: string[] = [];
+              params.api.forEachNode((node) => {
+                columnData.push(node.data.ticker);
+              });
+              void navigator.clipboard.writeText(columnData.join(","));
+              toast(`Copied ${columnData.length} ticker`);
+            },
+          },
+        ],
+      } as ColDef,
+      ...state.columns
         .map((c) => {
           if (c.property_name && ignoreColumnsProperty.has(c.property_name)) {
             return null;
@@ -96,10 +154,17 @@ export function ListApp(_props: WidgetProps) {
             field: c.id,
             headerName: c.name,
             cellDataType: c.type === "condition" ? "boolean" : undefined,
+            valueFormatter: (params) => {
+              if (typeof params.value === "number") {
+                return +params.value.toFixed(2);
+              }
+              return params.value;
+            },
           } as ColDef;
         })
         .filter((c) => c)
         .map((c) => c as ColDef),
+    ],
     [state.columns, ignoreColumnsProperty],
   );
 
@@ -123,9 +188,17 @@ export function ListApp(_props: WidgetProps) {
 
   const getRowId = useCallback<GetRowIdFunc>((r) => r.data.ticker, []);
 
+  const gridOption = useMemo(() => {
+    return {
+      statusBar: {
+        statusPanels: [{ statusPanel: "agTotalRowCountComponent" }],
+      },
+    };
+  }, []);
+
   return (
     <div className={"h-full flex flex-col relative"}>
-      <div className="absolute top-2 right-2 z-10 flex gap-2">
+      <div className="flex justify-end">
         <FilterManager
           conditions={state.conditions}
           logic={state.logic}
@@ -137,35 +210,17 @@ export function ListApp(_props: WidgetProps) {
         />
       </div>
 
-      {/* Filter Status Display */}
-      {state.conditions.length > 0 && (
-        <div className="p-2 bg-blue-50 border-b">
-          <div className="flex items-center gap-2 text-sm">
-            <Filter className="w-4 h-4" />
-            <span className="font-medium">Active Filters:</span>
-            <Badge variant="secondary">
-              {state.conditions.length} condition
-              {state.conditions.length > 1 ? "s" : ""} (
-              {state.logic.toUpperCase()})
-            </Badge>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleFiltersChange([], "and")}
-              className="ml-auto"
-            >
-              <X className="w-3 h-3 mr-1" />
-              Clear All
-            </Button>
-          </div>
-        </div>
-      )}
-
       <AgGridReact
         className="ag-terminal-theme flex-1"
+        autoSizeStrategy={{ type: "fitCellContents" }}
         rowData={rows}
         getRowId={getRowId}
+        defaultCsvExportParams={{ exportedRows: "all" }}
         columnDefs={columns}
+        onCellFocused={onCellFocused}
+        headerHeight={36}
+        rowHeight={32}
+        statusBar={gridOption.statusBar}
       />
     </div>
   );
