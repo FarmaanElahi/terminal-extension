@@ -8,8 +8,10 @@ import { ChartApp } from "./widget/chart_app.tsx";
 import { DataPanelApp } from "./widget/data_panel.tsx";
 import { GroupRankingApp } from "./widget/group_ranking.tsx";
 import { MSIndiaApp } from "@/components/dashboard/widget/ms_india_app.tsx";
+import { EZScanApp } from "@/components/dashboard/widget/ez_scan.tsx";
 
 export type WidgetType =
+  | "ez_scan"
   | "screener"
   | "watchlist"
   | "stats"
@@ -23,6 +25,7 @@ export const widgetComponents: Record<
   WidgetType,
   ComponentType<WidgetProps>
 > = {
+  ez_scan: EZScanApp,
   screener: ScreenerApp,
   watchlist: WatchlistApp,
   stats: StatsApp,
@@ -38,6 +41,11 @@ export const widgets: Array<{
   name: string;
   description: string;
 }> = [
+  {
+    type: "ez_scan",
+    name: "EZ Scan",
+    description: "Perform powerful stock scanning",
+  },
   {
     type: "screener",
     name: "Stock Screener",
@@ -85,6 +93,7 @@ export const WIDGET_SIZES: Record<WidgetType, { w: number; h: number }> = {
   group_ranking: { w: 3, h: 4 },
   watchlist: { w: 3, h: 4 },
   screener: { w: 3, h: 4 },
+  ez_scan: { w: 3, h: 4 },
   stats: { w: 4, h: 2 },
   ideas: { w: 3, h: 4 },
   panel: { w: 3, h: 4 },

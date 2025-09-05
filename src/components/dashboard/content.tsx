@@ -40,8 +40,8 @@ export function DashboardContent() {
 
     // Bootstrap-style widths for different breakpoints
     const bootstrapWidths = {
-      lg: 2, // 6 columns (12/2)
-      md: 3, // 4 columns (12/3)
+      lg: 4, // 6 columns (12/2)
+      md: 4, // 4 columns (12/3)
       sm: 4, // 3 columns (12/4)
       xs: 6, // 2 column (12/6)
       xxs: 12, // 1 column (12/12)

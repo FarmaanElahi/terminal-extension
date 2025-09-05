@@ -18,7 +18,7 @@ function pushSymbolChangedEvent() {
     window.postMessage(
       {
         type: "symbolChanged",
-        payload: { symbol: r.pro_name },
+        payload: { symbol: r.base_name?.[0] },
         destination: "side-panel",
       } satisfies SymbolChangedEvent,
       "*",
