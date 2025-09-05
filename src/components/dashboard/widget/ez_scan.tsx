@@ -53,22 +53,10 @@ export function EZScanApp(_props: WidgetProps) {
         property_name: "logo",
       },
       {
-        id: "price",
-        name: "Price",
-        type: "computed",
-        expression: "c",
-      },
-      {
         id: "change",
         name: "Change%",
         type: "computed",
         expression: "(c/prv(c) -1 ) * 100",
-      },
-      {
-        id: "net_change",
-        name: "Net Change",
-        type: "computed",
-        expression: "c - prv(c)",
       },
     ] as ColumnConfig[],
     logic: "and" as "and" | "or",
