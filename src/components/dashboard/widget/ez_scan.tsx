@@ -80,7 +80,7 @@ export function EZScanApp(_props: WidgetProps) {
     ],
   });
 
-  const { data } = useListScan(state);
+  const { data, isFetching } = useListScan(state);
 
   const switcher = useSymbolSwitcher();
   const onCellFocused = useCallback(
@@ -225,7 +225,8 @@ export function EZScanApp(_props: WidgetProps) {
       <AgGridReact
         className="ag-terminal-theme flex-1"
         autoSizeStrategy={{ type: "fitCellContents" }}
-        rowData={rows}
+        rowData={isFetching ? undefined : rows}
+        loading={isFetching}
         getRowId={getRowId}
         defaultCsvExportParams={{ exportedRows: "all" }}
         columnDefs={columns}
