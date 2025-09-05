@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Edit, Filter, Plus, Settings, Trash2 } from "lucide-react";
+import { Edit, Filter, Plus, Settings, Trash2, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -35,6 +35,7 @@ import { useSymbolSwitcher } from "@/hooks/use-symbol.tsx";
 
 export function EZScanApp(_props: WidgetProps) {
   const [state, setState] = useState({
+    market: "india",
     conditions: [] as FilterCondition[],
     columns: [
       {
@@ -186,6 +187,13 @@ export function EZScanApp(_props: WidgetProps) {
     }));
   };
 
+  const handleMarketChange = (market: string) => {
+    setState((prevState) => ({
+      ...prevState,
+      market,
+    }));
+  };
+
   const getRowId = useCallback<GetRowIdFunc>((r) => r.data.ticker, []);
 
   const gridOption = useMemo(() => {
@@ -199,6 +207,10 @@ export function EZScanApp(_props: WidgetProps) {
   return (
     <div className={"h-full flex flex-col relative"}>
       <div className="flex justify-end">
+        <MarketManager
+          market={state.market}
+          onMarketChange={handleMarketChange}
+        />
         <FilterManager
           conditions={state.conditions}
           logic={state.logic}
@@ -222,6 +234,28 @@ export function EZScanApp(_props: WidgetProps) {
         rowHeight={32}
         statusBar={gridOption.statusBar}
       />
+    </div>
+  );
+}
+
+interface MarketManagerProps {
+  market: string;
+  onMarketChange: (market: string) => void;
+}
+
+export function MarketManager({ market, onMarketChange }: MarketManagerProps) {
+  return (
+    <div className="mr-2">
+      <Select value={market} onValueChange={onMarketChange}>
+        <SelectTrigger className="w-32 bg-white/90 backdrop-blur-sm">
+          <Globe className="w-4 h-4 mr-1" />
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="india">India</SelectItem>
+          <SelectItem value="us">US</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
