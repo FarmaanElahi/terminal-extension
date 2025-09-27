@@ -36,10 +36,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Edit,
   Filter,
-  FolderOpen,
   Globe,
   Plus,
-  Save,
   Settings,
   Target,
   Trash2,
@@ -48,7 +46,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useSymbolSwitcher } from "@/hooks/use-symbol.tsx";
-import { Json, Scans } from "@/types/supabase";
+import { Json } from "@/types/generated/supabase.ts";
 
 export function EZScanApp(_props: WidgetProps) {
   const [state, setState] = useState({
@@ -87,9 +85,18 @@ export function EZScanApp(_props: WidgetProps) {
 
   // Add scan management state
   const [currentScanId, setCurrentScanId] = useState<string | null>(null);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [showLoadDialog, setShowLoadDialog] = useState(false);
-  const [scanName, setScanName] = useState("");
+  const [showScanDialog, setShowScanDialog] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [scanFormData, setScanFormData] = useState({
+    name: "",
+    market: "india",
+    pre_conditions: [] as FilterCondition[],
+    prescan_logic: "and" as "and" | "or",
+    conditions: [] as FilterCondition[],
+    columns: [] as ColumnConfig[],
+    logic: "and" as "and" | "or",
+    sort_columns: [] as any[],
+  });
 
   const { data, isFetching, isPending } = useListScan(state);
   const { data: savedScans } = useScans();
@@ -98,14 +105,14 @@ export function EZScanApp(_props: WidgetProps) {
   const createScan = useCreateScan((scan) => {
     setCurrentScanId(scan.id);
     toast.success(`Scan "${scan.name}" saved successfully`);
-    setShowSaveDialog(false);
-    setScanName("");
+    setShowScanDialog(false);
+    resetScanForm();
   });
 
   const updateScan = useUpdateScan((scan) => {
     toast.success(`Scan "${scan.name}" updated successfully`);
-    setShowSaveDialog(false);
-    setScanName("");
+    setShowScanDialog(false);
+    resetScanForm();
   });
 
   const deleteScan = useDeleteScan(() => {
@@ -197,107 +204,46 @@ export function EZScanApp(_props: WidgetProps) {
     [state.columns, ignoreColumnsProperty],
   );
 
-  const handleColumnsChange = (newColumns: ColumnConfig[]) => {
-    setState((prevState) => ({
-      ...prevState,
-      columns: newColumns,
-    }));
+  // Add this function to sync scanFormData changes with the main state
+  const handleScanFormDataChange = (updates: Partial<typeof scanFormData>) => {
+    setScanFormData((prev) => ({ ...prev, ...updates }));
+
+    // If we're editing the current scan, immediately update the main state
+    if (editMode && currentScanId) {
+      setState((prevState) => ({
+        ...prevState,
+        ...updates,
+      }));
+    }
   };
 
-  const handleFiltersChange = (
-    conditions: FilterCondition[],
-    logic: "and" | "or",
-  ) => {
-    setState((prevState) => ({
-      ...prevState,
-      conditions,
-      logic,
-    }));
+  // Modify the existing scan form change handlers to use the new function
+  const handleScanMarketChange = (market: string) => {
+    handleScanFormDataChange({ market });
   };
 
-  const handlePrescanFiltersChange = (
+  const handleScanPrescanFiltersChange = (
     pre_conditions: FilterCondition[],
     prescan_logic: "and" | "or",
   ) => {
-    setState((prevState) => ({
-      ...prevState,
-      pre_conditions,
-      prescan_logic,
-    }));
+    handleScanFormDataChange({ pre_conditions, prescan_logic });
   };
 
-  const handleMarketChange = (market: string) => {
-    setState((prevState) => ({
-      ...prevState,
-      market,
-    }));
+  const handleScanFiltersChange = (
+    conditions: FilterCondition[],
+    logic: "and" | "or",
+  ) => {
+    handleScanFormDataChange({ conditions, logic });
+  };
+
+  const handleScanColumnsChange = (columns: ColumnConfig[]) => {
+    handleScanFormDataChange({ columns });
   };
 
   // Scan management functions
-  const handleSaveScan = () => {
-    if (!scanName.trim()) {
-      toast.error("Please enter a scan name");
-      return;
-    }
-
-    const scanConfiguration = {
-      market: state.market,
-      pre_conditions: state.pre_conditions,
-      prescan_logic: state.prescan_logic,
-      conditions: state.conditions,
-      columns: state.columns,
-      logic: state.logic,
-      sort_columns: state.sort_columns,
-    };
-
-    if (currentScanId) {
-      // Update existing scan
-      updateScan.mutate({
-        id: currentScanId,
-        payload: {
-          name: scanName,
-          configuration: scanConfiguration as unknown as Json,
-        },
-      });
-    } else {
-      // Create new scan
-      createScan.mutate({
-        name: scanName,
-        source: state.market === "india" ? "india" : "us",
-        configuration: scanConfiguration as unknown as Json,
-      });
-    }
-  };
-
-  const handleLoadScan = (scan: Scans) => {
-    const config = scan.configuration as unknown as typeof state;
-    setState({
-      market: config.market || "india",
-      pre_conditions: config.pre_conditions || [],
-      prescan_logic: config.prescan_logic || "and",
-      conditions: config.conditions || [],
-      columns: config.columns || [],
-      logic: config.logic || "and",
-      sort_columns: config.sort_columns || [],
-    });
-    setCurrentScanId(scan.id);
-    setScanName(scan.name);
-    setShowLoadDialog(false);
-    toast.success(`Loaded scan "${scan.name}"`);
-  };
-
-  const handleDeleteScan = (scanId: string, scanName: string) => {
-    if (confirm(`Are you sure you want to delete scan "${scanName}"?`)) {
-      deleteScan.mutate(scanId);
-      if (currentScanId === scanId) {
-        setCurrentScanId(null);
-        setScanName("");
-      }
-    }
-  };
-
-  const handleNewScan = () => {
-    setState({
+  const resetScanForm = () => {
+    setScanFormData({
+      name: "",
       market: "india",
       pre_conditions: [],
       prescan_logic: "and",
@@ -323,16 +269,130 @@ export function EZScanApp(_props: WidgetProps) {
         },
       ],
       logic: "and",
-      sort_columns: [
-        {
-          column: "Bullish Setup",
-          direction: "desc",
-        },
-      ],
+      sort_columns: [],
     });
-    setCurrentScanId(null);
-    setScanName("");
-    toast.success("Started new scan");
+  };
+
+  const handleNewScan = () => {
+    resetScanForm();
+    setEditMode(false);
+    setShowScanDialog(true);
+  };
+
+  const handleEditScan = () => {
+    if (!currentScanId) return;
+
+    const currentScan = savedScans?.find((s) => s.id === currentScanId);
+    if (currentScan) {
+      const config = currentScan.configuration as any;
+      setScanFormData({
+        name: currentScan.name,
+        market: config.market || "india",
+        pre_conditions: config.pre_conditions || [],
+        prescan_logic: config.prescan_logic || "and",
+        conditions: config.conditions || [],
+        columns: config.columns || [],
+        logic: config.logic || "and",
+        sort_columns: config.sort_columns || [],
+      });
+    }
+    setEditMode(true);
+    setShowScanDialog(true);
+  };
+
+  const handleScanSelect = (scanId: string) => {
+    if (scanId === "new") {
+      setState({
+        market: "india",
+        pre_conditions: [],
+        prescan_logic: "and",
+        conditions: [],
+        columns: [
+          {
+            id: "name",
+            name: "Name",
+            type: "static",
+            property_name: "name",
+          },
+          {
+            id: "logo",
+            name: "Logo",
+            type: "static",
+            property_name: "logo",
+          },
+          {
+            id: "change",
+            name: "Change%",
+            type: "computed",
+            expression: "(c/prv(c) -1 ) * 100",
+          },
+        ],
+        logic: "and",
+        sort_columns: [],
+      });
+      setCurrentScanId(null);
+      return;
+    }
+
+    const scan = savedScans?.find((s) => s.id === scanId);
+    if (scan) {
+      const config = scan.configuration as any;
+      setState({
+        market: config.market || "india",
+        pre_conditions: config.pre_conditions || [],
+        prescan_logic: config.prescan_logic || "and",
+        conditions: config.conditions || [],
+        columns: config.columns || [],
+        logic: config.logic || "and",
+        sort_columns: config.sort_columns || [],
+      });
+      setCurrentScanId(scan.id);
+      toast.success(`Loaded scan "${scan.name}"`);
+    }
+  };
+
+  const handleSaveScan = () => {
+    if (!scanFormData.name.trim()) {
+      toast.error("Please enter a scan name");
+      return;
+    }
+
+    const scanConfiguration = {
+      market: scanFormData.market,
+      pre_conditions: scanFormData.pre_conditions,
+      prescan_logic: scanFormData.prescan_logic,
+      conditions: scanFormData.conditions,
+      columns: scanFormData.columns,
+      logic: scanFormData.logic,
+      sort_columns: scanFormData.sort_columns,
+    };
+
+    if (editMode && currentScanId) {
+      // Update existing scan
+      updateScan.mutate({
+        id: currentScanId,
+        payload: {
+          name: scanFormData.name,
+          configuration: scanConfiguration as unknown as Json,
+        },
+      });
+    } else {
+      // Create new scan
+      createScan.mutate({
+        name: scanFormData.name,
+        source: scanFormData.market === "india" ? "india" : "us",
+        configuration: scanConfiguration as unknown as Json,
+      });
+    }
+  };
+
+  const handleDeleteScan = (scanId: string, scanName: string) => {
+    if (confirm(`Are you sure you want to delete scan "${scanName}"?`)) {
+      deleteScan.mutate(scanId);
+      if (currentScanId === scanId) {
+        setCurrentScanId(null);
+      }
+    }
   };
 
   const getRowId = useCallback<GetRowIdFunc>((r) => r.data.ticker, []);
@@ -345,159 +405,154 @@ export function EZScanApp(_props: WidgetProps) {
     };
   }, []);
 
+  const currentScanName = savedScans?.find((s) => s.id === currentScanId)?.name;
+
   return (
     <div className={"h-full flex flex-col relative"}>
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center gap-2">
-          {currentScanId && (
-            <Badge variant="outline" className="bg-green-50">
-              {scanName}
-            </Badge>
-          )}
-        </div>
-
-        <div className="flex">
-          {/* Scan Management */}
+      <div className="flex justify-between items-center">
+        {/* Left side - Scan dropdown with plus and edit */}
+        <div className="flex items-center gap-1">
           <Button
             variant="outline"
             size="sm"
-            className="bg-white/90 backdrop-blur-sm mr-2"
+            className="bg-white/90 backdrop-blur-sm px-2"
             onClick={handleNewScan}
           >
-            <Plus className="w-4 h-4 mr-1" />
-            New
+            <Plus className="w-4 h-4" />
           </Button>
 
-          <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white/90 backdrop-blur-sm mr-2"
-              >
-                <FolderOpen className="w-4 h-4 mr-1" />
-                Load
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Load Saved Scan</DialogTitle>
-              </DialogHeader>
-              <div className="max-h-96 overflow-y-auto">
-                {savedScans?.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    No saved scans found
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {savedScans?.map((scan) => (
-                      <div
-                        key={scan.id}
-                        className="flex items-center justify-between p-3 border rounded hover:bg-muted/50"
-                      >
-                        <div>
-                          <div className="font-medium">{scan.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            Source: {scan.source} • Updated:{" "}
-                            {new Date(
-                              scan.updated_at || scan.created_at,
-                            ).toLocaleDateString()}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleLoadScan(scan)}
-                          >
-                            Load
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDeleteScan(scan.id, scan.name)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Select
+            value={currentScanId || "new"}
+            onValueChange={handleScanSelect}
+          >
+            <SelectTrigger className="w-48 bg-white/90 backdrop-blur-sm">
+              <SelectValue placeholder="Select scan...">
+                {currentScanName || "New Scan"}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="new">New Scan</SelectItem>
+              {savedScans?.map((scan) => (
+                <SelectItem key={scan.id} value={scan.id}>
+                  {scan.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-          <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white/90 backdrop-blur-sm mr-2"
-              >
-                <Save className="w-4 h-4 mr-1" />
-                Save
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {currentScanId ? "Update Scan" : "Save Scan"}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="scanName">Scan Name</Label>
-                  <Input
-                    id="scanName"
-                    value={scanName}
-                    onChange={(e) => setScanName(e.target.value)}
-                    placeholder="Enter scan name..."
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleSaveScan}
-                    disabled={createScan.isPending || updateScan.isPending}
-                    className="flex-1"
-                  >
-                    {createScan.isPending || updateScan.isPending
-                      ? "Saving..."
-                      : currentScanId
-                        ? "Update"
-                        : "Save"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowSaveDialog(false)}
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <MarketManager
-            market={state.market}
-            onMarketChange={handleMarketChange}
-          />
-          <PrescanFilterManager
-            pre_conditions={state.pre_conditions}
-            prescan_logic={state.prescan_logic}
-            onPrescanFiltersChange={handlePrescanFiltersChange}
-          />
-          <FilterManager
-            conditions={state.conditions}
-            logic={state.logic}
-            onFiltersChange={handleFiltersChange}
-          />
-          <ColumnManager
-            columns={state.columns}
-            onColumnsChange={handleColumnsChange}
-          />
+          {currentScanId && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-white/90 backdrop-blur-sm px-2"
+              onClick={handleEditScan}
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Scan Management Dialog */}
+      <Dialog open={showScanDialog} onOpenChange={setShowScanDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editMode ? "Edit Scan" : "Create New Scan"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Scan Name */}
+            <div>
+              <Label htmlFor="scanName">Name</Label>
+              <Input
+                id="scanName"
+                value={scanFormData.name}
+                onChange={(e) =>
+                  handleScanFormDataChange({ name: e.target.value })
+                }
+                placeholder="Enter scan name..."
+              />
+            </div>
+
+            {/* Market */}
+            <div>
+              <Select
+                value={scanFormData.market}
+                onValueChange={handleScanMarketChange}
+              >
+                <SelectTrigger className="w-32">
+                  <Globe className="w-4 h-4 mr-1" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="india">India</SelectItem>
+                  <SelectItem value="us">US</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Pre-conditions */}
+            <div className="flex">
+              <PrescanFilterManager
+                pre_conditions={scanFormData.pre_conditions}
+                prescan_logic={scanFormData.prescan_logic}
+                onPrescanFiltersChange={handleScanPrescanFiltersChange}
+              />
+
+              {/* Conditions */}
+              <FilterManager
+                conditions={scanFormData.conditions}
+                logic={scanFormData.logic}
+                onFiltersChange={handleScanFiltersChange}
+              />
+
+              {/* Columns */}
+              <ColumnManager
+                columns={scanFormData.columns}
+                onColumnsChange={handleScanColumnsChange}
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              {editMode && currentScanId && (
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    const scanName =
+                      savedScans?.find((s) => s.id === currentScanId)?.name ||
+                      "";
+                    handleDeleteScan(currentScanId, scanName);
+                    setShowScanDialog(false);
+                  }}
+                >
+                  <Trash2 />
+                </Button>
+              )}
+              <div className="flex-1"></div>
+              <Button
+                onClick={handleSaveScan}
+                disabled={createScan.isPending || updateScan.isPending}
+              >
+                {createScan.isPending || updateScan.isPending
+                  ? "Saving..."
+                  : editMode
+                    ? "Update Scan"
+                    : "Create Scan"}
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => setShowScanDialog(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AgGridReact
         className="ag-terminal-theme flex-1"
