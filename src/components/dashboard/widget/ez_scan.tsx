@@ -27,7 +27,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Edit, Filter, Plus, Settings, Trash2, Globe } from "lucide-react";
+import {
+  Edit,
+  Filter,
+  Plus,
+  Settings,
+  Trash2,
+  Globe,
+  Target,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -36,6 +44,8 @@ import { useSymbolSwitcher } from "@/hooks/use-symbol.tsx";
 export function EZScanApp(_props: WidgetProps) {
   const [state, setState] = useState({
     market: "india",
+    pre_conditions: [] as FilterCondition[],
+    prescan_logic: "and" as "and" | "or",
     conditions: [] as FilterCondition[],
     columns: [
       {
@@ -68,7 +78,7 @@ export function EZScanApp(_props: WidgetProps) {
     ],
   });
 
-  const { data, isFetching } = useListScan(state);
+  const { data, isFetching, isPending } = useListScan(state);
 
   const switcher = useSymbolSwitcher();
   const onCellFocused = useCallback(
@@ -175,6 +185,17 @@ export function EZScanApp(_props: WidgetProps) {
     }));
   };
 
+  const handlePrescanFiltersChange = (
+    pre_conditions: FilterCondition[],
+    prescan_logic: "and" | "or",
+  ) => {
+    setState((prevState) => ({
+      ...prevState,
+      pre_conditions,
+      prescan_logic,
+    }));
+  };
+
   const handleMarketChange = (market: string) => {
     setState((prevState) => ({
       ...prevState,
@@ -199,6 +220,11 @@ export function EZScanApp(_props: WidgetProps) {
           market={state.market}
           onMarketChange={handleMarketChange}
         />
+        <PrescanFilterManager
+          pre_conditions={state.pre_conditions}
+          prescan_logic={state.prescan_logic}
+          onPrescanFiltersChange={handlePrescanFiltersChange}
+        />
         <FilterManager
           conditions={state.conditions}
           logic={state.logic}
@@ -214,7 +240,7 @@ export function EZScanApp(_props: WidgetProps) {
         className="ag-terminal-theme flex-1"
         autoSizeStrategy={{ type: "fitCellContents" }}
         rowData={isFetching ? undefined : rows}
-        loading={isFetching}
+        loading={isFetching && !isPending}
         getRowId={getRowId}
         defaultCsvExportParams={{ exportedRows: "all" }}
         columnDefs={columns}
@@ -253,7 +279,10 @@ export interface FilterCondition {
   expression: string;
   condition_type: "static" | "computed";
   evaluation_period: "now" | "within_last" | "x_bar_ago";
+  evaluation_type: "boolean" | "rank";
   value?: number;
+  rank_min?: number;
+  rank_max?: number;
 }
 
 export interface ColumnConfig {
@@ -267,8 +296,261 @@ export interface ColumnConfig {
     expression: string;
     condition_type: "computed";
     evaluation_period: "now" | "within_last" | "x_bar_ago";
+    evaluation_type: "boolean" | "rank";
     value?: number;
+    rank_min?: number;
+    rank_max?: number;
   }>;
+}
+
+interface PrescanFilterManagerProps {
+  pre_conditions: FilterCondition[];
+  prescan_logic: "and" | "or";
+  onPrescanFiltersChange: (
+    pre_conditions: FilterCondition[],
+    prescan_logic: "and" | "or",
+  ) => void;
+}
+
+export function PrescanFilterManager({
+  pre_conditions,
+  prescan_logic,
+  onPrescanFiltersChange,
+}: PrescanFilterManagerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [editingFilter, setEditingFilter] = useState<FilterCondition | null>(
+    null,
+  );
+  const [newFilter, setNewFilter] = useState<Partial<FilterCondition>>({
+    condition_type: "static",
+    evaluation_period: "now",
+    evaluation_type: "boolean",
+  });
+
+  const handleAddFilter = () => {
+    if (!newFilter.expression) return;
+
+    const filter: FilterCondition = {
+      expression: newFilter.expression,
+      condition_type: newFilter.condition_type || "static",
+      evaluation_period: newFilter.evaluation_period || "now",
+      evaluation_type: newFilter.evaluation_type || "boolean",
+      ...(newFilter.value !== undefined && { value: newFilter.value }),
+      ...(newFilter.evaluation_type === "rank" && {
+        rank_min: newFilter.rank_min,
+        rank_max: newFilter.rank_max,
+      }),
+    };
+
+    onPrescanFiltersChange([...pre_conditions, filter], prescan_logic);
+    setNewFilter({
+      condition_type: "static",
+      evaluation_period: "now",
+      evaluation_type: "boolean",
+    });
+  };
+
+  const handleUpdateFilter = () => {
+    if (!editingFilter) return;
+
+    const updatedConditions = pre_conditions.map((condition) =>
+      condition === pre_conditions.find((c) => c === editingFilter)
+        ? editingFilter
+        : condition,
+    );
+    onPrescanFiltersChange(updatedConditions, prescan_logic);
+    setEditingFilter(null);
+  };
+
+  const handleDeleteFilter = (index: number) => {
+    onPrescanFiltersChange(
+      pre_conditions.filter((_, i) => i !== index),
+      prescan_logic,
+    );
+  };
+
+  const handleNewFilterChange = (updates: Partial<FilterCondition>) => {
+    setNewFilter((prev) => ({ ...prev, ...updates }));
+  };
+
+  const handleEditFilterChange = (updates: Partial<FilterCondition>) => {
+    setEditingFilter((prev) => (prev ? { ...prev, ...updates } : null));
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="bg-white/90 backdrop-blur-sm mr-2"
+        >
+          <Target className="w-4 h-4 mr-1" />
+          Pre-scan
+          {pre_conditions.length > 0 && (
+            <Badge variant="secondary" className="ml-1">
+              {pre_conditions.length}
+            </Badge>
+          )}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Manage Pre-scan Filters</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Logic Operator */}
+          {pre_conditions.length > 1 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Pre-scan Logic Operator</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Select
+                  value={prescan_logic}
+                  onValueChange={(value) =>
+                    onPrescanFiltersChange(
+                      pre_conditions,
+                      value as "and" | "or",
+                    )
+                  }
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="and">AND</SelectItem>
+                    <SelectItem value="or">OR</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {prescan_logic === "and"
+                    ? "All pre-conditions must be true"
+                    : "At least one pre-condition must be true"}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Add New Filter */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Add New Pre-scan Filter</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {renderFilterForm(newFilter, handleNewFilterChange)}
+              <Button onClick={handleAddFilter} className="w-full mt-4">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Pre-scan Filter
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Edit Filter */}
+          {editingFilter && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Edit Pre-scan Filter</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {renderFilterForm(editingFilter, handleEditFilterChange)}
+                <div className="flex gap-2 mt-4">
+                  <Button onClick={handleUpdateFilter} className="flex-1">
+                    Save Changes
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditingFilter(null)}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Existing Filters */}
+          {pre_conditions.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  Active Pre-scan Filters ({pre_conditions.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-80 overflow-y-auto">
+                  {pre_conditions.map((condition, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 border rounded"
+                    >
+                      <div className="flex-1">
+                        <div className="font-medium">
+                          Pre-scan Filter {index + 1}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          <Badge variant="outline" className="mr-2">
+                            {condition.condition_type}
+                          </Badge>
+                          <Badge variant="outline" className="mr-2">
+                            {condition.evaluation_period}
+                            {condition.value && ` (${condition.value})`}
+                          </Badge>
+                          <Badge variant="outline" className="mr-2">
+                            {condition.evaluation_type}
+                          </Badge>
+                          {condition.evaluation_type === "rank" && (
+                            <>
+                              {condition.rank_min && (
+                                <Badge variant="secondary" className="mr-1">
+                                  Min: {condition.rank_min}
+                                </Badge>
+                              )}
+                              {condition.rank_max && (
+                                <Badge variant="secondary" className="mr-1">
+                                  Max: {condition.rank_max}
+                                </Badge>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        <div className="text-sm mt-1 font-mono bg-gray-50 p-1 rounded">
+                          {condition.expression}
+                        </div>
+                        {index < pre_conditions.length - 1 && (
+                          <Badge variant="secondary" className="mt-1">
+                            {prescan_logic.toUpperCase()}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditingFilter({ ...condition })}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteFilter(index)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 interface FilterManagerProps {
@@ -276,6 +558,165 @@ interface FilterManagerProps {
   logic: "and" | "or";
   onFiltersChange: (conditions: FilterCondition[], logic: "and" | "or") => void;
 }
+
+const renderFilterForm = (
+  filter: Partial<FilterCondition>,
+  onChange: (updates: Partial<FilterCondition>) => void,
+) => (
+  <div className="space-y-4">
+    <div>
+      <Label>Condition Type</Label>
+      <Select
+        value={filter.condition_type}
+        onValueChange={(value) => {
+          onChange({
+            condition_type: value as "static" | "computed",
+            expression: "",
+          });
+        }}
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="static">Static</SelectItem>
+          <SelectItem value="computed">Computed</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div>
+      <Label htmlFor="expression">Expression</Label>
+      <Textarea
+        id="expression"
+        value={filter.expression || ""}
+        onChange={(e) => onChange({ expression: e.target.value })}
+        placeholder={
+          filter.condition_type === "static"
+            ? "Field name (e.g., price, volume, market_cap)"
+            : "Formula (e.g., c/prv(c,30) > 1.2, rsi(14) > 70)"
+        }
+        rows={2}
+      />
+      <p className="text-sm text-muted-foreground mt-1">
+        {filter.condition_type === "static"
+          ? "Enter the field name you want to filter on"
+          : "Enter a computed expression that evaluates to true/false or rank"}
+      </p>
+    </div>
+
+    <div>
+      <Label>Evaluation Period</Label>
+      <Select
+        value={filter.evaluation_period}
+        onValueChange={(value) =>
+          onChange({
+            evaluation_period: value as "now" | "within_last" | "x_bar_ago",
+            // Reset value when changing evaluation period
+            value: value === "now" ? undefined : filter.value,
+          })
+        }
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="now">Now</SelectItem>
+          <SelectItem value="within_last">Within Last X Bars</SelectItem>
+          <SelectItem value="x_bar_ago">X Bars Ago</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    {(filter.evaluation_period === "within_last" ||
+      filter.evaluation_period === "x_bar_ago") && (
+      <div>
+        <Label htmlFor="value">Value</Label>
+        <Input
+          id="value"
+          type="number"
+          value={filter.value || ""}
+          onChange={(e) => {
+            const val = parseInt(e.target.value);
+            onChange({ value: isNaN(val) ? undefined : val });
+          }}
+          placeholder="Number of bars"
+        />
+      </div>
+    )}
+
+    <div>
+      <Label>Evaluation Type</Label>
+      <Select
+        value={filter.evaluation_type}
+        onValueChange={(value) =>
+          onChange({
+            evaluation_type: value as "boolean" | "rank",
+            // Reset rank fields when changing to boolean
+            ...(value === "boolean" && {
+              rank_min: undefined,
+              rank_max: undefined,
+            }),
+          })
+        }
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="boolean">Boolean</SelectItem>
+          <SelectItem value="rank">Rank</SelectItem>
+        </SelectContent>
+      </Select>
+      <p className="text-sm text-muted-foreground mt-1">
+        {filter.evaluation_type === "boolean"
+          ? "Filter returns true/false"
+          : "Filter returns rank percentile (0-100)"}
+      </p>
+    </div>
+
+    {filter.evaluation_type === "rank" && (
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="rank_min">Min Rank</Label>
+          <Input
+            id="rank_min"
+            type="number"
+            min="0"
+            max="100"
+            value={filter.rank_min || ""}
+            onChange={(e) => {
+              const val = parseFloat(e.target.value);
+              onChange({ rank_min: isNaN(val) ? undefined : val });
+            }}
+            placeholder="0-100"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Minimum rank percentile
+          </p>
+        </div>
+        <div>
+          <Label htmlFor="rank_max">Max Rank</Label>
+          <Input
+            id="rank_max"
+            type="number"
+            min="0"
+            max="100"
+            value={filter.rank_max || ""}
+            onChange={(e) => {
+              const val = parseFloat(e.target.value);
+              onChange({ rank_max: isNaN(val) ? undefined : val });
+            }}
+            placeholder="0-100"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Maximum rank percentile
+          </p>
+        </div>
+      </div>
+    )}
+  </div>
+);
 
 export function FilterManager({
   conditions,
@@ -289,6 +730,7 @@ export function FilterManager({
   const [newFilter, setNewFilter] = useState<Partial<FilterCondition>>({
     condition_type: "static",
     evaluation_period: "now",
+    evaluation_type: "boolean",
   });
 
   const handleAddFilter = () => {
@@ -298,13 +740,19 @@ export function FilterManager({
       expression: newFilter.expression,
       condition_type: newFilter.condition_type || "static",
       evaluation_period: newFilter.evaluation_period || "now",
+      evaluation_type: newFilter.evaluation_type || "boolean",
       ...(newFilter.value !== undefined && { value: newFilter.value }),
+      ...(newFilter.evaluation_type === "rank" && {
+        rank_min: newFilter.rank_min,
+        rank_max: newFilter.rank_max,
+      }),
     };
 
     onFiltersChange([...conditions, filter], logic);
     setNewFilter({
       condition_type: "static",
       evaluation_period: "now",
+      evaluation_type: "boolean",
     });
   };
 
@@ -335,101 +783,13 @@ export function FilterManager({
     setEditingFilter((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
-  const renderFilterForm = (
-    filter: Partial<FilterCondition>,
-    onChange: (updates: Partial<FilterCondition>) => void,
-  ) => (
-    <div className="space-y-4">
-      <div>
-        <Label>Condition Type</Label>
-        <Select
-          value={filter.condition_type}
-          onValueChange={(value) => {
-            onChange({
-              condition_type: value as "static" | "computed",
-              expression: "",
-            });
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="static">Static</SelectItem>
-            <SelectItem value="computed">Computed</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label htmlFor="expression">Expression</Label>
-        <Textarea
-          id="expression"
-          value={filter.expression || ""}
-          onChange={(e) => onChange({ expression: e.target.value })}
-          placeholder={
-            filter.condition_type === "static"
-              ? "Field name (e.g., price, volume, market_cap)"
-              : "Formula (e.g., c/prv(c,30) > 1.2, rsi(14) > 70)"
-          }
-          rows={2}
-        />
-        <p className="text-sm text-muted-foreground mt-1">
-          {filter.condition_type === "static"
-            ? "Enter the field name you want to filter on"
-            : "Enter a computed expression that evaluates to true/false"}
-        </p>
-      </div>
-
-      <div>
-        <Label>Evaluation Period</Label>
-        <Select
-          value={filter.evaluation_period}
-          onValueChange={(value) =>
-            onChange({
-              evaluation_period: value as "now" | "within_last" | "x_bar_ago",
-              // Reset value when changing evaluation period
-              value: value === "now" ? undefined : filter.value,
-            })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="now">Now</SelectItem>
-            <SelectItem value="within_last">Within Last X Bars</SelectItem>
-            <SelectItem value="x_bar_ago">X Bars Ago</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {(filter.evaluation_period === "within_last" ||
-        filter.evaluation_period === "x_bar_ago") && (
-        <div>
-          <Label htmlFor="value">Value</Label>
-          <Input
-            id="value"
-            type="number"
-            value={filter.value || ""}
-            onChange={(e) => {
-              const val = parseInt(e.target.value);
-              onChange({ value: isNaN(val) ? undefined : val });
-            }}
-            placeholder="Number of bars"
-          />
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
           variant="outline"
           size="sm"
-          className="bg-white/90 backdrop-blur-sm"
+          className="bg-white/90 backdrop-blur-sm mr-2"
         >
           <Filter className="w-4 h-4 mr-1" />
           Filters
@@ -537,6 +897,23 @@ export function FilterManager({
                             {condition.evaluation_period}
                             {condition.value && ` (${condition.value})`}
                           </Badge>
+                          <Badge variant="outline" className="mr-2">
+                            {condition.evaluation_type}
+                          </Badge>
+                          {condition.evaluation_type === "rank" && (
+                            <>
+                              {condition.rank_min && (
+                                <Badge variant="secondary" className="mr-1">
+                                  Min: {condition.rank_min}
+                                </Badge>
+                              )}
+                              {condition.rank_max && (
+                                <Badge variant="secondary" className="mr-1">
+                                  Max: {condition.rank_max}
+                                </Badge>
+                              )}
+                            </>
+                          )}
                         </div>
                         <div className="text-sm mt-1 font-mono bg-gray-50 p-1 rounded">
                           {condition.expression}
@@ -874,7 +1251,10 @@ interface ConditionEditorProps {
     expression: string;
     condition_type: "computed";
     evaluation_period: "now" | "within_last" | "x_bar_ago";
+    evaluation_type: "boolean" | "rank";
     value?: number;
+    rank_min?: number;
+    rank_max?: number;
   }>;
   onChange: (
     logic: "and" | "or",
@@ -894,6 +1274,7 @@ function ConditionEditor({
         expression: "",
         condition_type: "computed",
         evaluation_period: "now",
+        evaluation_type: "boolean",
       },
     ]);
   };
@@ -987,6 +1368,61 @@ function ConditionEditor({
                 />
               )}
             </div>
+
+            <div>
+              <Select
+                value={condition.evaluation_type}
+                onValueChange={(value) =>
+                  updateCondition(index, {
+                    evaluation_type: value as any,
+                    // Reset rank fields when changing to boolean
+                    ...(value === "boolean" && {
+                      rank_min: undefined,
+                      rank_max: undefined,
+                    }),
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="boolean">Boolean</SelectItem>
+                  <SelectItem value="rank">Rank</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {condition.evaluation_type === "rank" && (
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={condition.rank_min || ""}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    updateCondition(index, {
+                      rank_min: isNaN(val) ? undefined : val,
+                    });
+                  }}
+                  placeholder="Min Rank"
+                />
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={condition.rank_max || ""}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    updateCondition(index, {
+                      rank_max: isNaN(val) ? undefined : val,
+                    });
+                  }}
+                  placeholder="Max Rank"
+                />
+              </div>
+            )}
           </div>
         ))}
 
