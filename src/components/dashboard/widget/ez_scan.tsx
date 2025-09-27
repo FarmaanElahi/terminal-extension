@@ -1,5 +1,11 @@
 import { WidgetProps } from "./widget-props";
-import { useListScan } from "@/lib/api.ts";
+import {
+  useCreateScan,
+  useDeleteScan,
+  useListScan,
+  useScans,
+  useUpdateScan,
+} from "@/lib/api.ts";
 import { AgGridReact } from "ag-grid-react";
 import { useCallback, useMemo, useState } from "react";
 import { defaultColumns } from "@/components/symbols/columns.tsx";
@@ -30,16 +36,19 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Edit,
   Filter,
-  Plus,
-  Settings,
-  Trash2,
+  FolderOpen,
   Globe,
+  Plus,
+  Save,
+  Settings,
   Target,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useSymbolSwitcher } from "@/hooks/use-symbol.tsx";
+import { Json, Scans } from "@/types/supabase";
 
 export function EZScanApp(_props: WidgetProps) {
   const [state, setState] = useState({
@@ -50,10 +59,8 @@ export function EZScanApp(_props: WidgetProps) {
     columns: [
       {
         id: "name",
-        // Header
         name: "Name",
         type: "static",
-        // Field in the db
         property_name: "name",
       },
       {
@@ -78,13 +85,37 @@ export function EZScanApp(_props: WidgetProps) {
     ],
   });
 
+  // Add scan management state
+  const [currentScanId, setCurrentScanId] = useState<string | null>(null);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showLoadDialog, setShowLoadDialog] = useState(false);
+  const [scanName, setScanName] = useState("");
+
   const { data, isFetching, isPending } = useListScan(state);
+  const { data: savedScans } = useScans();
+
+  // Scan management hooks
+  const createScan = useCreateScan((scan) => {
+    setCurrentScanId(scan.id);
+    toast.success(`Scan "${scan.name}" saved successfully`);
+    setShowSaveDialog(false);
+    setScanName("");
+  });
+
+  const updateScan = useUpdateScan((scan) => {
+    toast.success(`Scan "${scan.name}" updated successfully`);
+    setShowSaveDialog(false);
+    setScanName("");
+  });
+
+  const deleteScan = useDeleteScan(() => {
+    toast.success("Scan deleted successfully");
+  });
 
   const switcher = useSymbolSwitcher();
+
   const onCellFocused = useCallback(
     (event: CellFocusedEvent) => {
-      // If the cell was focus because of selection change, we will ignore
-      // switching the symbol
       if ((event.column as AgColumn)?.colId === "ag-Grid-SelectionColumn") {
         return;
       }
@@ -92,7 +123,6 @@ export function EZScanApp(_props: WidgetProps) {
       const { rowIndex } = event;
       if (rowIndex === undefined || rowIndex === null) return;
       const symbol = event.api.getDisplayedRowAtIndex(rowIndex)?.data;
-      if (!symbol) return;
       if (!symbol) return;
       const { ticker } = symbol;
       if (!ticker) return;
@@ -203,6 +233,108 @@ export function EZScanApp(_props: WidgetProps) {
     }));
   };
 
+  // Scan management functions
+  const handleSaveScan = () => {
+    if (!scanName.trim()) {
+      toast.error("Please enter a scan name");
+      return;
+    }
+
+    const scanConfiguration = {
+      market: state.market,
+      pre_conditions: state.pre_conditions,
+      prescan_logic: state.prescan_logic,
+      conditions: state.conditions,
+      columns: state.columns,
+      logic: state.logic,
+      sort_columns: state.sort_columns,
+    };
+
+    if (currentScanId) {
+      // Update existing scan
+      updateScan.mutate({
+        id: currentScanId,
+        payload: {
+          name: scanName,
+          configuration: scanConfiguration as unknown as Json,
+        },
+      });
+    } else {
+      // Create new scan
+      createScan.mutate({
+        name: scanName,
+        source: state.market === "india" ? "india" : "us",
+        configuration: scanConfiguration as unknown as Json,
+      });
+    }
+  };
+
+  const handleLoadScan = (scan: Scans) => {
+    const config = scan.configuration as unknown as typeof state;
+    setState({
+      market: config.market || "india",
+      pre_conditions: config.pre_conditions || [],
+      prescan_logic: config.prescan_logic || "and",
+      conditions: config.conditions || [],
+      columns: config.columns || [],
+      logic: config.logic || "and",
+      sort_columns: config.sort_columns || [],
+    });
+    setCurrentScanId(scan.id);
+    setScanName(scan.name);
+    setShowLoadDialog(false);
+    toast.success(`Loaded scan "${scan.name}"`);
+  };
+
+  const handleDeleteScan = (scanId: string, scanName: string) => {
+    if (confirm(`Are you sure you want to delete scan "${scanName}"?`)) {
+      deleteScan.mutate(scanId);
+      if (currentScanId === scanId) {
+        setCurrentScanId(null);
+        setScanName("");
+      }
+    }
+  };
+
+  const handleNewScan = () => {
+    setState({
+      market: "india",
+      pre_conditions: [],
+      prescan_logic: "and",
+      conditions: [],
+      columns: [
+        {
+          id: "name",
+          name: "Name",
+          type: "static",
+          property_name: "name",
+        },
+        {
+          id: "logo",
+          name: "Logo",
+          type: "static",
+          property_name: "logo",
+        },
+        {
+          id: "change",
+          name: "Change%",
+          type: "computed",
+          expression: "(c/prv(c) -1 ) * 100",
+        },
+      ],
+      logic: "and",
+      sort_columns: [
+        {
+          column: "Bullish Setup",
+          direction: "desc",
+        },
+      ],
+    });
+    setCurrentScanId(null);
+    setScanName("");
+    toast.success("Started new scan");
+  };
+
   const getRowId = useCallback<GetRowIdFunc>((r) => r.data.ticker, []);
 
   const gridOption = useMemo(() => {
@@ -215,25 +347,156 @@ export function EZScanApp(_props: WidgetProps) {
 
   return (
     <div className={"h-full flex flex-col relative"}>
-      <div className="flex justify-end">
-        <MarketManager
-          market={state.market}
-          onMarketChange={handleMarketChange}
-        />
-        <PrescanFilterManager
-          pre_conditions={state.pre_conditions}
-          prescan_logic={state.prescan_logic}
-          onPrescanFiltersChange={handlePrescanFiltersChange}
-        />
-        <FilterManager
-          conditions={state.conditions}
-          logic={state.logic}
-          onFiltersChange={handleFiltersChange}
-        />
-        <ColumnManager
-          columns={state.columns}
-          onColumnsChange={handleColumnsChange}
-        />
+      <div className="flex justify-between items-center mb-2">
+        <div className="flex items-center gap-2">
+          {currentScanId && (
+            <Badge variant="outline" className="bg-green-50">
+              {scanName}
+            </Badge>
+          )}
+        </div>
+
+        <div className="flex">
+          {/* Scan Management */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-white/90 backdrop-blur-sm mr-2"
+            onClick={handleNewScan}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            New
+          </Button>
+
+          <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white/90 backdrop-blur-sm mr-2"
+              >
+                <FolderOpen className="w-4 h-4 mr-1" />
+                Load
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Load Saved Scan</DialogTitle>
+              </DialogHeader>
+              <div className="max-h-96 overflow-y-auto">
+                {savedScans?.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    No saved scans found
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {savedScans?.map((scan) => (
+                      <div
+                        key={scan.id}
+                        className="flex items-center justify-between p-3 border rounded hover:bg-muted/50"
+                      >
+                        <div>
+                          <div className="font-medium">{scan.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Source: {scan.source} • Updated:{" "}
+                            {new Date(
+                              scan.updated_at || scan.created_at,
+                            ).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleLoadScan(scan)}
+                          >
+                            Load
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteScan(scan.id, scan.name)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white/90 backdrop-blur-sm mr-2"
+              >
+                <Save className="w-4 h-4 mr-1" />
+                Save
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {currentScanId ? "Update Scan" : "Save Scan"}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="scanName">Scan Name</Label>
+                  <Input
+                    id="scanName"
+                    value={scanName}
+                    onChange={(e) => setScanName(e.target.value)}
+                    placeholder="Enter scan name..."
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleSaveScan}
+                    disabled={createScan.isPending || updateScan.isPending}
+                    className="flex-1"
+                  >
+                    {createScan.isPending || updateScan.isPending
+                      ? "Saving..."
+                      : currentScanId
+                        ? "Update"
+                        : "Save"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowSaveDialog(false)}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <MarketManager
+            market={state.market}
+            onMarketChange={handleMarketChange}
+          />
+          <PrescanFilterManager
+            pre_conditions={state.pre_conditions}
+            prescan_logic={state.prescan_logic}
+            onPrescanFiltersChange={handlePrescanFiltersChange}
+          />
+          <FilterManager
+            conditions={state.conditions}
+            logic={state.logic}
+            onFiltersChange={handleFiltersChange}
+          />
+          <ColumnManager
+            columns={state.columns}
+            onColumnsChange={handleColumnsChange}
+          />
+        </div>
       </div>
 
       <AgGridReact

@@ -4,416 +4,459 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[]
+  | Json[];
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.3 (519615d)";
+  };
   public: {
     Tables: {
       alerts: {
         Row: {
-          created_at: string
-          deleted_at: string | null
-          id: string
-          is_active: boolean
-          last_triggered_at: string | null
-          last_triggered_price: number | null
-          lhs_attr: Json | null
-          lhs_type: Database["public"]["Enums"]["alert_lhs_type"]
-          notes: string | null
-          operator: string
-          rhs_attr: Json
-          rhs_type: Database["public"]["Enums"]["alert_rhs_type"]
-          symbol: string
-          triggered_count: number
-          type: Database["public"]["Enums"]["alert_type"]
-          updated_at: string | null
-          user_id: string
-        }
+          created_at: string;
+          deleted_at: string | null;
+          id: string;
+          is_active: boolean;
+          last_triggered_at: string | null;
+          last_triggered_price: number | null;
+          lhs_attr: Json | null;
+          lhs_type: Database["public"]["Enums"]["alert_lhs_type"];
+          notes: string | null;
+          operator: string;
+          rhs_attr: Json;
+          rhs_type: Database["public"]["Enums"]["alert_rhs_type"];
+          symbol: string;
+          triggered_count: number;
+          type: Database["public"]["Enums"]["alert_type"];
+          updated_at: string | null;
+          user_id: string | null;
+        };
         Insert: {
-          created_at: string
-          deleted_at?: string | null
-          id?: string
-          is_active?: boolean
-          last_triggered_at?: string | null
-          last_triggered_price?: number | null
-          lhs_attr?: Json | null
-          lhs_type: Database["public"]["Enums"]["alert_lhs_type"]
-          notes?: string | null
-          operator: string
-          rhs_attr: Json
-          rhs_type: Database["public"]["Enums"]["alert_rhs_type"]
-          symbol: string
-          triggered_count?: number
-          type: Database["public"]["Enums"]["alert_type"]
-          updated_at?: string | null
-          user_id?: string
-        }
+          created_at: string;
+          deleted_at?: string | null;
+          id?: string;
+          is_active?: boolean;
+          last_triggered_at?: string | null;
+          last_triggered_price?: number | null;
+          lhs_attr?: Json | null;
+          lhs_type: Database["public"]["Enums"]["alert_lhs_type"];
+          notes?: string | null;
+          operator: string;
+          rhs_attr: Json;
+          rhs_type: Database["public"]["Enums"]["alert_rhs_type"];
+          symbol: string;
+          triggered_count?: number;
+          type: Database["public"]["Enums"]["alert_type"];
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
         Update: {
-          created_at?: string
-          deleted_at?: string | null
-          id?: string
-          is_active?: boolean
-          last_triggered_at?: string | null
-          last_triggered_price?: number | null
-          lhs_attr?: Json | null
-          lhs_type?: Database["public"]["Enums"]["alert_lhs_type"]
-          notes?: string | null
-          operator?: string
-          rhs_attr?: Json
-          rhs_type?: Database["public"]["Enums"]["alert_rhs_type"]
-          symbol?: string
-          triggered_count?: number
-          type?: Database["public"]["Enums"]["alert_type"]
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: string;
+          is_active?: boolean;
+          last_triggered_at?: string | null;
+          last_triggered_price?: number | null;
+          lhs_attr?: Json | null;
+          lhs_type?: Database["public"]["Enums"]["alert_lhs_type"];
+          notes?: string | null;
+          operator?: string;
+          rhs_attr?: Json;
+          rhs_type?: Database["public"]["Enums"]["alert_rhs_type"];
+          symbol?: string;
+          triggered_count?: number;
+          type?: Database["public"]["Enums"]["alert_type"];
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       chart_drawings: {
         Row: {
-          chart_id: string | null
-          created_at: string
-          id: string
-          layout_id: string | null
-          ownerSource: string | null
-          state: Json | null
-          symbol: string
-          user_id: string | null
-        }
+          chart_id: string | null;
+          created_at: string;
+          id: string;
+          layout_id: string | null;
+          ownerSource: string | null;
+          state: Json | null;
+          symbol: string;
+          user_id: string | null;
+        };
         Insert: {
-          chart_id?: string | null
-          created_at?: string
-          id: string
-          layout_id?: string | null
-          ownerSource?: string | null
-          state?: Json | null
-          symbol: string
-          user_id?: string | null
-        }
+          chart_id?: string | null;
+          created_at?: string;
+          id: string;
+          layout_id?: string | null;
+          ownerSource?: string | null;
+          state?: Json | null;
+          symbol: string;
+          user_id?: string | null;
+        };
         Update: {
-          chart_id?: string | null
-          created_at?: string
-          id?: string
-          layout_id?: string | null
-          ownerSource?: string | null
-          state?: Json | null
-          symbol?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+          chart_id?: string | null;
+          created_at?: string;
+          id?: string;
+          layout_id?: string | null;
+          ownerSource?: string | null;
+          state?: Json | null;
+          symbol?: string;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       chart_layouts: {
         Row: {
-          content: Json | null
-          created_at: string
-          id: string
-          name: string | null
-          resolution: string | null
-          symbol: string | null
-        }
+          content: Json | null;
+          created_at: string;
+          id: string;
+          name: string | null;
+          resolution: string | null;
+          symbol: string | null;
+        };
         Insert: {
-          content?: Json | null
-          created_at?: string
-          id?: string
-          name?: string | null
-          resolution?: string | null
-          symbol?: string | null
-        }
+          content?: Json | null;
+          created_at?: string;
+          id?: string;
+          name?: string | null;
+          resolution?: string | null;
+          symbol?: string | null;
+        };
         Update: {
-          content?: Json | null
-          created_at?: string
-          id?: string
-          name?: string | null
-          resolution?: string | null
-          symbol?: string | null
-        }
-        Relationships: []
-      }
+          content?: Json | null;
+          created_at?: string;
+          id?: string;
+          name?: string | null;
+          resolution?: string | null;
+          symbol?: string | null;
+        };
+        Relationships: [];
+      };
       chart_templates: {
         Row: {
-          content: Json | null
-          created_at: string
-          name: string
-          user_id: string | null
-        }
+          content: Json | null;
+          created_at: string;
+          name: string;
+          user_id: string | null;
+        };
         Insert: {
-          content?: Json | null
-          created_at?: string
-          name: string
-          user_id?: string | null
-        }
+          content?: Json | null;
+          created_at?: string;
+          name: string;
+          user_id?: string | null;
+        };
         Update: {
-          content?: Json | null
-          created_at?: string
-          name?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+          content?: Json | null;
+          created_at?: string;
+          name?: string;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       dashboards: {
         Row: {
-          created_at: string
-          id: string
-          layout: Json | null
-          name: string
-          updated_at: string | null
-          user_id: string | null
-        }
+          created_at: string;
+          id: string;
+          layout: Json | null;
+          name: string;
+          updated_at: string | null;
+          user_id: string | null;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          layout?: Json | null
-          name: string
-          updated_at?: string | null
-          user_id?: string | null
-        }
+          created_at?: string;
+          id?: string;
+          layout?: Json | null;
+          name: string;
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          layout?: Json | null
-          name?: string
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          id?: string;
+          layout?: Json | null;
+          name?: string;
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       data_panels: {
         Row: {
-          created_at: string
-          id: string
-          name: string
-          sections: Json
-          udpated_at: string
-          user_id: string | null
-        }
+          created_at: string;
+          id: string;
+          name: string;
+          sections: Json;
+          udpated_at: string;
+          user_id: string | null;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          sections?: Json
-          udpated_at?: string
-          user_id?: string | null
-        }
+          created_at?: string;
+          id?: string;
+          name: string;
+          sections?: Json;
+          udpated_at?: string;
+          user_id?: string | null;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          sections?: Json
-          udpated_at?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          id?: string;
+          name?: string;
+          sections?: Json;
+          udpated_at?: string;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       scanner: {
         Row: {
-          active: boolean
-          color: string | null
-          combo_lists: string[] | null
-          created_at: string | null
-          description: string | null
-          id: string
-          name: string
-          shared: boolean
-          state: Json | null
-          symbols: string[]
-          type: Database["public"]["Enums"]["list_type"]
-          updated_at: string | null
-          user_id: string | null
-        }
+          active: boolean;
+          color: string | null;
+          combo_lists: string[] | null;
+          created_at: string | null;
+          description: string | null;
+          id: string;
+          name: string;
+          shared: boolean;
+          state: Json | null;
+          symbols: string[];
+          type: Database["public"]["Enums"]["list_type"];
+          updated_at: string | null;
+          user_id: string | null;
+        };
         Insert: {
-          active?: boolean
-          color?: string | null
-          combo_lists?: string[] | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name?: string
-          shared?: boolean
-          state?: Json | null
-          symbols?: string[]
-          type: Database["public"]["Enums"]["list_type"]
-          updated_at?: string | null
-          user_id?: string | null
-        }
+          active?: boolean;
+          color?: string | null;
+          combo_lists?: string[] | null;
+          created_at?: string | null;
+          description?: string | null;
+          id?: string;
+          name?: string;
+          shared?: boolean;
+          state?: Json | null;
+          symbols?: string[];
+          type: Database["public"]["Enums"]["list_type"];
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
         Update: {
-          active?: boolean
-          color?: string | null
-          combo_lists?: string[] | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name?: string
-          shared?: boolean
-          state?: Json | null
-          symbols?: string[]
-          type?: Database["public"]["Enums"]["list_type"]
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+          active?: boolean;
+          color?: string | null;
+          combo_lists?: string[] | null;
+          created_at?: string | null;
+          description?: string | null;
+          id?: string;
+          name?: string;
+          shared?: boolean;
+          state?: Json | null;
+          symbols?: string[];
+          type?: Database["public"]["Enums"]["list_type"];
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
+      scans: {
+        Row: {
+          configuration: Json;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          name: string;
+          source: Database["public"]["Enums"]["source_list"];
+          updated_at: string | null;
+        };
+        Insert: {
+          configuration: Json;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          name: string;
+          source: Database["public"]["Enums"]["source_list"];
+          updated_at?: string | null;
+        };
+        Update: {
+          configuration?: Json;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          name?: string;
+          source?: Database["public"]["Enums"]["source_list"];
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
       screens: {
         Row: {
-          created_at: string
-          id: string
-          name: string
-          state: Json | null
-          updated_at: string | null
-          user_id: string | null
-        }
+          created_at: string;
+          id: string;
+          name: string;
+          state: Json | null;
+          updated_at: string | null;
+          user_id: string | null;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          state?: Json | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
+          created_at?: string;
+          id?: string;
+          name: string;
+          state?: Json | null;
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          state?: Json | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          id?: string;
+          name?: string;
+          state?: Json | null;
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       study_templates: {
         Row: {
-          content: Json | null
-          created_at: string
-          name: string
-          user_id: string | null
-        }
+          content: Json | null;
+          created_at: string;
+          name: string;
+          user_id: string | null;
+        };
         Insert: {
-          content?: Json | null
-          created_at?: string
-          name: string
-          user_id?: string | null
-        }
+          content?: Json | null;
+          created_at?: string;
+          name: string;
+          user_id?: string | null;
+        };
         Update: {
-          content?: Json | null
-          created_at?: string
-          name?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+          content?: Json | null;
+          created_at?: string;
+          name?: string;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       user_integrations: {
         Row: {
-          access_token: string | null
-          created_at: string
-          id: number
-          provider_id: string | null
-          provider_profile: Json
-          type: string | null
-          user_id: string | null
-        }
+          access_token: string | null;
+          created_at: string;
+          id: number;
+          provider_id: string | null;
+          provider_profile: Json;
+          type: string | null;
+          user_id: string | null;
+        };
         Insert: {
-          access_token?: string | null
-          created_at?: string
-          id?: number
-          provider_id?: string | null
-          provider_profile: Json
-          type?: string | null
-          user_id?: string | null
-        }
+          access_token?: string | null;
+          created_at?: string;
+          id?: number;
+          provider_id?: string | null;
+          provider_profile: Json;
+          type?: string | null;
+          user_id?: string | null;
+        };
         Update: {
-          access_token?: string | null
-          created_at?: string
-          id?: number
-          provider_id?: string | null
-          provider_profile?: Json
-          type?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+          access_token?: string | null;
+          created_at?: string;
+          id?: number;
+          provider_id?: string | null;
+          provider_profile?: Json;
+          type?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       watchlists: {
         Row: {
-          active: boolean
-          color: string | null
-          created_at: string | null
-          description: string | null
-          id: string
-          lists: string[] | null
-          name: string
-          shared: boolean
-          state: Json | null
-          symbols: string[]
-          type: Database["public"]["Enums"]["watchlist_type"]
-          updated_at: string | null
-          user_id: string | null
-        }
+          active: boolean;
+          color: string | null;
+          created_at: string | null;
+          description: string | null;
+          id: string;
+          lists: string[] | null;
+          name: string;
+          shared: boolean;
+          state: Json | null;
+          symbols: string[];
+          type: Database["public"]["Enums"]["watchlist_type"];
+          updated_at: string | null;
+          user_id: string | null;
+        };
         Insert: {
-          active?: boolean
-          color?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          lists?: string[] | null
-          name?: string
-          shared?: boolean
-          state?: Json | null
-          symbols?: string[]
-          type?: Database["public"]["Enums"]["watchlist_type"]
-          updated_at?: string | null
-          user_id?: string | null
-        }
+          active?: boolean;
+          color?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          id?: string;
+          lists?: string[] | null;
+          name?: string;
+          shared?: boolean;
+          state?: Json | null;
+          symbols?: string[];
+          type?: Database["public"]["Enums"]["watchlist_type"];
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
         Update: {
-          active?: boolean
-          color?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          lists?: string[] | null
-          name?: string
-          shared?: boolean
-          state?: Json | null
-          symbols?: string[]
-          type?: Database["public"]["Enums"]["watchlist_type"]
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-    }
+          active?: boolean;
+          color?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          id?: string;
+          lists?: string[] | null;
+          name?: string;
+          shared?: boolean;
+          state?: Json | null;
+          symbols?: string[];
+          type?: Database["public"]["Enums"]["watchlist_type"];
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Enums: {
-      alert_lhs_type: "last_price"
-      alert_rhs_type: "constant" | "trend_line"
-      alert_type: "simple"
-      list_type: "screener" | "simple" | "combo" | "colored"
-      watchlist_type: "custom" | "colored" | "combo"
-    }
+      alert_lhs_type: "last_price";
+      alert_rhs_type: "constant" | "trend_line";
+      alert_type: "simple";
+      list_type: "screener" | "simple" | "combo" | "colored";
+      source_list: "india" | "us" | "custom_list";
+      watchlist_type: "custom" | "colored" | "combo";
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+};
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<
+  keyof Database,
+  "public"
+>];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R;
     }
     ? R
     : never
@@ -421,87 +464,95 @@ export type Tables<
         DefaultSchema["Views"])
     ? (DefaultSchema["Tables"] &
         DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+    : never;
 
 export const Constants = {
   public: {
@@ -510,7 +561,8 @@ export const Constants = {
       alert_rhs_type: ["constant", "trend_line"],
       alert_type: ["simple"],
       list_type: ["screener", "simple", "combo", "colored"],
+      source_list: ["india", "us", "custom_list"],
       watchlist_type: ["custom", "colored", "combo"],
     },
   },
-} as const
+} as const;

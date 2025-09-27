@@ -48,3 +48,7 @@ export type UpdateDataPanel =
 export type Alert = Database["public"]["Tables"]["alerts"]["Row"];
 export type InsertAlert = Database["public"]["Tables"]["alerts"]["Insert"];
 export type UpdateAlert = Database["public"]["Tables"]["alerts"]["Update"];
+
+export type Scans = Database["public"]["Tables"]["scans"]["Row"];
+export type InsertScans = Database["public"]["Tables"]["scans"]["Insert"];
+export type UpdateScans = Database["public"]["Tables"]["scans"]["Update"];

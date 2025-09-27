@@ -15,13 +15,16 @@ import {
   InsertDashboard,
   InsertDataPanel,
   InsertScanner,
+  InsertScans,
   InsertScreen,
   Scanner,
+  Scans,
   Screen,
   UpdateAlert,
   UpdateDashboard,
   UpdateDataPanel,
   UpdateScanner,
+  UpdateScans,
   UpdateScreen,
 } from "@/types/supabase";
 
@@ -903,9 +906,103 @@ export function useGroupRanks(props: GroupRankProps) {
   });
 }
 
-export function useListScan(props: unknown) {
+// Add these scan-related hooks to your existing api.ts file
+
+//##################### SCANS #####################
+export function useScans() {
   return useQuery({
-    queryKey: [JSON.stringify(props)],
-    queryFn: async () => runListScan(props),
+    queryKey: ["scans"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("scans")
+        .select("*")
+        .order("updated_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
   });
 }
+
+export function useCreateScan(onComplete?: (scan: Scans) => void) {
+  const client = useQueryClient();
+  return useMutation({
+    onSuccess: (scan: Scans) => {
+      void client.invalidateQueries({ queryKey: ["scans"] });
+      onComplete?.(scan);
+    },
+    mutationFn: async (scan: InsertScans) => {
+      const { data, error } = await supabase
+        .from("scans")
+        .insert({
+          ...scan,
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useUpdateScan(onComplete?: (scan: Scans) => void) {
+  const client = useQueryClient();
+  return useMutation({
+    onSuccess: (scan: Scans) => {
+      void client.invalidateQueries({ queryKey: ["scans"] });
+      onComplete?.(scan);
+    },
+    mutationFn: async ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: UpdateScans;
+    }) => {
+      const { data, error } = await supabase
+        .from("scans")
+        .update({
+          ...payload,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useDeleteScan(onComplete?: () => void) {
+  const client = useQueryClient();
+  return useMutation({
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["scans"] });
+      onComplete?.();
+    },
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase
+        .from("scans")
+        .delete()
+        .eq("id", id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+// Also, let's fix the useListScan function to include the state parameter
+export function useListScan(state: any) {
+  return useQuery({
+    queryKey: ["list_scan", JSON.stringify(state)],
+    queryFn: async () => runListScan(state),
+  });
+}
+
+//##################### SCANS #####################
