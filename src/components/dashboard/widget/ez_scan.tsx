@@ -556,7 +556,7 @@ export function EZScanApp(_props: WidgetProps) {
 
       <AgGridReact
         className="ag-terminal-theme flex-1"
-        autoSizeStrategy={{ type: "fitCellContents" }}
+        autoSizeStrategy={{ type: "fitProvidedWidth", width: 80 }}
         rowData={isFetching ? undefined : rows}
         loading={isFetching && !isPending}
         getRowId={getRowId}
