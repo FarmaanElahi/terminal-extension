@@ -321,6 +321,9 @@ export function PrescanFilterManager({
   const [editingFilter, setEditingFilter] = useState<FilterCondition | null>(
     null,
   );
+  const [editingFilterIndex, setEditingFilterIndex] = useState<number | null>(
+    null,
+  );
   const [newFilter, setNewFilter] = useState<Partial<FilterCondition>>({
     condition_type: "static",
     evaluation_period: "now",
@@ -351,15 +354,13 @@ export function PrescanFilterManager({
   };
 
   const handleUpdateFilter = () => {
-    if (!editingFilter) return;
+    if (editingFilterIndex === null || !editingFilter) return;
 
-    const updatedConditions = pre_conditions.map((condition) =>
-      condition === pre_conditions.find((c) => c === editingFilter)
-        ? editingFilter
-        : condition,
-    );
+    const updatedConditions = [...pre_conditions];
+    updatedConditions[editingFilterIndex] = editingFilter;
     onPrescanFiltersChange(updatedConditions, prescan_logic);
     setEditingFilter(null);
+    setEditingFilterIndex(null);
   };
 
   const handleDeleteFilter = (index: number) => {
@@ -461,7 +462,10 @@ export function PrescanFilterManager({
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => setEditingFilter(null)}
+                    onClick={() => {
+                      setEditingFilter(null);
+                      setEditingFilterIndex(null);
+                    }}
                     className="flex-1"
                   >
                     Cancel
@@ -529,7 +533,10 @@ export function PrescanFilterManager({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setEditingFilter({ ...condition })}
+                          onClick={() => {
+                            setEditingFilter({ ...condition });
+                            setEditingFilterIndex(index);
+                          }}
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -727,6 +734,9 @@ export function FilterManager({
   const [editingFilter, setEditingFilter] = useState<FilterCondition | null>(
     null,
   );
+  const [editingFilterIndex, setEditingFilterIndex] = useState<number | null>(
+    null,
+  );
   const [newFilter, setNewFilter] = useState<Partial<FilterCondition>>({
     condition_type: "static",
     evaluation_period: "now",
@@ -757,15 +767,13 @@ export function FilterManager({
   };
 
   const handleUpdateFilter = () => {
-    if (!editingFilter) return;
+    if (editingFilterIndex === null || !editingFilter) return;
 
-    const updatedConditions = conditions.map((condition) =>
-      condition === conditions.find((c) => c === editingFilter)
-        ? editingFilter
-        : condition,
-    );
+    const updatedConditions = [...conditions];
+    updatedConditions[editingFilterIndex] = editingFilter;
     onFiltersChange(updatedConditions, logic);
     setEditingFilter(null);
+    setEditingFilterIndex(null);
   };
 
   const handleDeleteFilter = (index: number) => {
@@ -864,7 +872,10 @@ export function FilterManager({
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => setEditingFilter(null)}
+                    onClick={() => {
+                      setEditingFilter(null);
+                      setEditingFilterIndex(null);
+                    }}
                     className="flex-1"
                   >
                     Cancel
@@ -928,7 +939,10 @@ export function FilterManager({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setEditingFilter({ ...condition })}
+                          onClick={() => {
+                            setEditingFilter({ ...condition });
+                            setEditingFilterIndex(index);
+                          }}
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -980,6 +994,9 @@ export function ColumnManager({
 }: ColumnManagerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [editingColumn, setEditingColumn] = useState<ColumnConfig | null>(null);
+  const [editingColumnIndex, setEditingColumnIndex] = useState<number | null>(
+    null,
+  );
   const [newColumn, setNewColumn] = useState<Partial<ColumnConfig>>({
     type: "static",
   });
@@ -1010,13 +1027,13 @@ export function ColumnManager({
   };
 
   const handleUpdateColumn = () => {
-    if (!editingColumn) return;
+    if (editingColumnIndex === null || !editingColumn) return;
 
-    const updatedColumns = columns.map((col) =>
-      col.id === editingColumn.id ? editingColumn : col,
-    );
+    const updatedColumns = [...columns];
+    updatedColumns[editingColumnIndex] = editingColumn;
     onColumnsChange(updatedColumns);
     setEditingColumn(null);
+    setEditingColumnIndex(null);
   };
 
   const handleDeleteColumn = (id: string) => {
@@ -1186,7 +1203,10 @@ export function ColumnManager({
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => setEditingColumn(null)}
+                    onClick={() => {
+                      setEditingColumn(null);
+                      setEditingColumnIndex(null);
+                    }}
                     className="flex-1"
                   >
                     Cancel
@@ -1203,7 +1223,7 @@ export function ColumnManager({
             </CardHeader>
             <CardContent>
               <div className="space-y-2 max-h-80 overflow-y-auto">
-                {columns.map((column) => (
+                {columns.map((column, index) => (
                   <div
                     key={column.id}
                     className="flex items-center justify-between p-3 border rounded"
@@ -1222,7 +1242,10 @@ export function ColumnManager({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setEditingColumn({ ...column })}
+                        onClick={() => {
+                          setEditingColumn({ ...column });
+                          setEditingColumnIndex(index);
+                        }}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
