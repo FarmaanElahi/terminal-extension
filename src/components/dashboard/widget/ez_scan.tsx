@@ -183,6 +183,7 @@ export function EZScanApp(_props: WidgetProps) {
               colId: c.id,
               field: c.id,
               headerName: c.name,
+              initialWidth: 120,
             } as ColDef;
           }
           return {
@@ -190,6 +191,7 @@ export function EZScanApp(_props: WidgetProps) {
             field: c.id,
             headerName: c.name,
             cellDataType: c.type === "condition" ? "boolean" : undefined,
+            initialWidth: 120,
             valueFormatter: (params) => {
               if (typeof params.value === "number") {
                 return +params.value.toFixed(2);
@@ -556,7 +558,7 @@ export function EZScanApp(_props: WidgetProps) {
 
       <AgGridReact
         className="ag-terminal-theme flex-1"
-        autoSizeStrategy={{ type: "fitProvidedWidth", width: 80 }}
+        autoSizeStrategy={{ type: "fitProvidedWidth", width: 120 }}
         rowData={isFetching ? undefined : rows}
         loading={isFetching && !isPending}
         getRowId={getRowId}
